@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useAuth } from '../../presentation/hooks/useAuth';
+import { commonStyles } from '../styles/common';
+import { typography } from '../styles/typo';
+import { colors } from '../styles/colors';
 
 export const RegisterScreen = ({ onNavigateToLogin }: { onNavigateToLogin: () => void }) => {
     const [email, setEmail] = useState('');
@@ -8,64 +11,60 @@ export const RegisterScreen = ({ onNavigateToLogin }: { onNavigateToLogin: () =>
     const [password, setPassword] = useState('');
     const { register, loading, error } = useAuth();
 
-    const handleRegister = () => {
-        register({ email, username, password });
-    };
+    const handleRegister = () => register({ email, username, password });
 
     return (
-        <View style= { styles.container } >
-        <Text style={ styles.title }> Inscription </Text>
+        <View style={commonStyles.screen}>
+            <Text style={[typography.title, { textAlign: 'center', marginBottom: 8 }]}>
+                🟣 Inscription
+            </Text>
+            <Text style={[typography.caption, { textAlign: 'center', marginBottom: 32 }]}>
+                Rejoins le combat
+            </Text>
 
-    { error && <Text style={ styles.error }> { error } </Text> }
+            {error && <Text style={commonStyles.error}>{error}</Text>}
 
-    <TextInput
-        style={ styles.input }
-    placeholder = "Nom d'utilisateur"
-    value = { username }
-    onChangeText = { setUsername }
-    autoCapitalize = "none"
-        />
+            <TextInput
+                style={commonStyles.input}
+                placeholder="Nom d'utilisateur"
+                placeholderTextColor={colors.textMuted}
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+            />
 
-        <TextInput
-        style={ styles.input }
-    placeholder = "Email"
-    value = { email }
-    onChangeText = { setEmail }
-    keyboardType = "email-address"
-    autoCapitalize = "none"
-        />
+            <TextInput
+                style={commonStyles.input}
+                placeholder="Email"
+                placeholderTextColor={colors.textMuted}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+            />
 
-        <TextInput
-        style={ styles.input }
-    placeholder = "Mot de passe"
-    value = { password }
-    onChangeText = { setPassword }
-    secureTextEntry
-        />
+            <TextInput
+                style={commonStyles.input}
+                placeholder="Mot de passe"
+                placeholderTextColor={colors.textMuted}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+            />
 
-        <TouchableOpacity style={ styles.button } onPress = { handleRegister } disabled = { loading } >
-            { loading?<ActivityIndicator color = "#fff" /> : <Text style={ styles.buttonText }> S'inscrire</Text>}
-                </TouchableOpacity>
+            <TouchableOpacity style={commonStyles.buttonAccent} onPress={handleRegister} disabled={loading}>
+                {loading ? (
+                    <ActivityIndicator color={colors.white} />
+                ) : (
+                    <Text style={commonStyles.buttonAccentText}>S'inscrire</Text>
+                )}
+            </TouchableOpacity>
 
-                < TouchableOpacity onPress = { onNavigateToLogin } >
-                    <Text style={ styles.link }> Déjà un compte ? Se connecter </Text>
-                        </TouchableOpacity>
-                        </View>
-  );
+            <View style={commonStyles.divider} />
+
+            <TouchableOpacity onPress={onNavigateToLogin}>
+                <Text style={commonStyles.link}>Déjà un compte ? Se connecter</Text>
+            </TouchableOpacity>
+        </View>
+    );
 };
-
-const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', padding: 20 },
-    title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 30 },
-    input: {
-        borderWidth: 1, borderColor: '#ddd', borderRadius: 8,
-        padding: 15, marginBottom: 15, fontSize: 16,
-    },
-    button: {
-        backgroundColor: '#007AFF', padding: 15, borderRadius: 8,
-        alignItems: 'center', marginBottom: 15,
-    },
-    buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-    error: { color: 'red', textAlign: 'center', marginBottom: 15 },
-    link: { color: '#007AFF', textAlign: 'center', fontSize: 14 },
-});
