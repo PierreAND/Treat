@@ -56,7 +56,7 @@ export const RegisterScreen = ({ onNavigateToLogin }: { onNavigateToLogin: () =>
                 {loading ? (
                     <ActivityIndicator color={colors.white} />
                 ) : (
-                    <Text style={commonStyles.buttonAccentText}>S'inscrire</Text>
+                    <Text style={commonStyles.buttonAccentText}>S&apos;inscrire</Text>
                 )}
             </TouchableOpacity>
 

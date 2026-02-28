@@ -18,7 +18,7 @@ export const LoginScreen = ({ onNavigateToRegister }: { onNavigateToRegister: ()
                 🟢 Connexion
             </Text>
             <Text style={[typography.caption, { textAlign: 'center', marginBottom: 32 }]}>
-                Entrez dans l'arène
+                Entrez dans l&apos;arène
             </Text>
 
             {error && <Text style={commonStyles.error}>{error}</Text>}
@@ -53,7 +53,7 @@ export const LoginScreen = ({ onNavigateToRegister }: { onNavigateToRegister: ()
             <View style={commonStyles.divider} />
 
             <TouchableOpacity onPress={onNavigateToRegister}>
-                <Text style={commonStyles.link}>Pas encore de compte ? S'inscrire</Text>
+                <Text style={commonStyles.link}>Pas encore de compte ? S&apos;inscrire</Text>
             </TouchableOpacity>
         </View>
     );
