@@ -1,6 +1,7 @@
+# config/packages/security.yaml
 security:
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
 
     providers:
         users:
@@ -9,6 +10,13 @@ security:
                 property: email
 
     firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        docs:
+            pattern: ^/api/(docs|doc|contexts|\.well-known|validation_errors|errors)|^/api$
+            security: false
         login:
             pattern: ^/api/login
             stateless: true

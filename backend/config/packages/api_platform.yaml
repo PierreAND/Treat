@@ -1,7 +1,15 @@
 api_platform:
-    title: Hello API Platform
+    title: Treat API
+    description: API de l'application Treat
     version: 1.0.0
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+    docs_formats:
+        jsonld: ['application/ld+json']
+        jsonopenapi: ['application/vnd.openapi+json']
+        html: ['text/html']
+    enable_swagger_ui: true
+    enable_swagger: true
     defaults:
         stateless: true
-        cache_headers:
-            vary: ['Content-Type', 'Authorization', 'Origin']
