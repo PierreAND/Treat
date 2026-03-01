@@ -14,7 +14,6 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/activities')]
 class ActivityController extends AbstractController
 {
-    // Liste des activités de l'utilisateur
     #[Route('', name: 'activity_list', methods: ['GET'])]
     public function list(EntityManagerInterface $em): JsonResponse
     {
