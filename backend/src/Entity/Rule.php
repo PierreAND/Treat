@@ -17,7 +17,7 @@ class Rule
     private ?string $name = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $type = null; // bonus ou malus
+    private ?string $type = null; 
 
     #[ORM\Column]
     private ?int $points = null;
