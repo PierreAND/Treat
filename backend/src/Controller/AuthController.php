@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 #[Route('/api')]
 class AuthController extends AbstractController
@@ -17,7 +18,8 @@ class AuthController extends AbstractController
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        JWTTokenManagerInterface $jwtManager
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
@@ -38,13 +40,15 @@ class AuthController extends AbstractController
         $em->persist($user);
         $em->flush();
 
+        $token = $jwtManager->create($user);
+
         return $this->json([
             'user' => [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
                 'username' => $user->getUsername(),
             ],
-            'message' => 'Inscription réussie'
+            'token' => $token
         ], 201);
     }
 }
