@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
         const result = await container.loginUser.execute(credentials);
         const storedToken = await AsyncStorage.getItem("token");
-        console.log("TOKEN AFTER LOGIN:", storedToken ? "STORED" : "NOT STORED");
+    
         setUser(result.user);
     } catch (e: any) {
         setError(e.message);
