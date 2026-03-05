@@ -31,7 +31,7 @@ export interface CreateActivityPayload {
 }
 
 export interface ActivityMember {
-    id: string
+    id: number
     username: string
     status: MemberStatus
 }
