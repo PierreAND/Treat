@@ -8,7 +8,6 @@ export class ApiActivityRepositoryImp implements ActivityRepository {
 
     private async getToken(): Promise<string> {
         const token = await AsyncStorage.getItem("token");
-        console.log("TOKEN:", token ? "PRESENT" : "NULL");
         if (!token) throw new Error("Non authentifié");
         return token;
     }
