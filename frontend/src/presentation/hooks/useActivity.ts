@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { Activity } from "@/src/domain/entities/activity.model";
 import { container } from "@/src/infrastructure/injecteur/container";
-import { useAuth } from "../context/AuthContext";
 
 export const useActivity = (id: number) => {
     const [activity, setActivity] = useState<Activity | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { isAuthenticated } = useAuth();
 
     const fetchActivity = async () => {
         setLoading(true);
