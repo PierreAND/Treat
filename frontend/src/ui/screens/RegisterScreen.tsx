@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useAuth } from '../../presentation/hooks/useAuth';
+import { useAuth } from '@/src/presentation/context/AuthContext';
 import { commonStyles } from '../styles/common';
 import { typography } from '../styles/typo';
 import { colors } from '../styles/colors';
