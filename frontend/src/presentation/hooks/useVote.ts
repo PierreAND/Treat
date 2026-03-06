@@ -17,6 +17,16 @@ export const useVotes = (activityId: number) => {
     const [results, setResults] = useState<VoteResult[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [hasVoted, setHasVoted] = useState(false)
+
+     const checkVoteStatus = async () => {
+        try {
+            const status = await container.getVoteStatus.execute(activityId);
+            setHasVoted(status.hasVoted);
+        } catch (e: any) {
+            console.log("Vote status check failed:", e.message);
+        }
+    };
 
     const addVote = (member: ActivityMember, rule: Rule) => {
         const exists = pendingVotes.find(
@@ -62,6 +72,7 @@ export const useVotes = (activityId: number) => {
             }));
             await container.submitVotes.execute(activityId, votes);
             setPendingVotes([]);
+            setHasVoted(true); 
         } catch (e: any) {
             setError(e.message);
         } finally {
@@ -86,6 +97,8 @@ export const useVotes = (activityId: number) => {
         pendingVotes,
         results,
         loading,
+        checkVoteStatus,
+        hasVoted,
         error,
         addVote,
         removeVote,
