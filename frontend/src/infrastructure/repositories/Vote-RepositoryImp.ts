@@ -45,4 +45,17 @@ export class ApiVoteRepositoryImp implements VoteRepository {
 
         return response.json();
     }
+
+async getVoteStatus(activityId: number): Promise<{ hasVoted: boolean }> {
+    const response = await fetch(`${this.baseUrl}/${activityId}/votes/status`, {
+        headers: await this.authHeaders(),
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur");
+    }
+
+    return response.json();
+}
 }
