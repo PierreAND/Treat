@@ -15,6 +15,8 @@ import { StopActivityUseCase } from "@/src/application/usecases/activiy/StopActi
 
 import { SubmitVotesUseCase } from "@/src/application/usecases/vote/submitVote-usecase";
 import { GetVoteResultsUseCase } from "@/src/application/usecases/vote/getResult-usecase";
+import { GetVoteStatusUseCase } from "@/src/application/usecases/vote/getVoteStatus-usecase";
+
 
 
 import { CreateBillUseCase } from "@/src/application/usecases/bill/createBill-usecase";
@@ -42,6 +44,7 @@ export const container = {
 
     submitVotes: new SubmitVotesUseCase(voteRepository),
     getVoteResults: new GetVoteResultsUseCase(voteRepository),
+    getVoteStatus: new GetVoteStatusUseCase(voteRepository),
 
     createBill: new CreateBillUseCase(billRepository),
     getBill: new GetBillUseCase(billRepository),
