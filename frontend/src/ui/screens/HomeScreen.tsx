@@ -18,6 +18,7 @@ import { ActivitySummary } from "@/src/domain/entities/activity.model";
 import { ActivityDetailScreen } from "./ActivityDetailScreen";
 import { VoteScreen } from "./VoteScreen"
 import { BillScreen } from "./BillScreen"
+import { PullToRefresh } from "../components/PullToRefresh";
 
 export const HomeScreen = () => {
     const { user, logout } = useAuth();
@@ -181,7 +182,9 @@ export const HomeScreen = () => {
         );
     }
     return (
-        <ScrollView style={styles.screen}>
+        <ScrollView style={styles.screen}
+        refreshControl={<PullToRefresh refreshing={loading} onRefresh={refresh} />}
+        >
 
             <View style={styles.header}>
                 <View>
