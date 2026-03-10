@@ -14,16 +14,18 @@ import { useAuth } from "@/src/presentation/context/AuthContext";
 import { colors } from "@/src/ui/styles/colors";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { ActivityMember } from "@/src/domain/entities/activity.model";
+import { PullToRefresh } from "../components/PullToRefresh";
 
 interface Props {
     activityId: number;
     onBack: () => void;
     onGoToVote: (activityId: number) => void;
     onGoToBill: (activityId: number) => void;
+
 }
 
 export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBill }: Props) => {
-    const { activity, loading, error, invite, start, stop, refresh } = useActivity(activityId);
+    const { activity, loading, error, invite, start, stop, refresh, refreshing, handleRefresh} = useActivity(activityId);
     const { user } = useAuth();
 
     const [username, setUsername] = useState("");
@@ -119,7 +121,9 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
     const pendingMembers = activity.members.filter((m) => m.status === "invited");
 
     return (
-        <ScrollView style={styles.screen}>
+        <ScrollView style={styles.screen}
+         refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
+         >
 
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={onBack}>
