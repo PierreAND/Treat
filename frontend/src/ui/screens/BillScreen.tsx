@@ -1,3 +1,4 @@
+// src/ui/screens/bill/BillScreen.tsx
 import React, { useState, useEffect } from "react";
 import {
     View,
@@ -7,6 +8,10 @@ import {
     ActivityIndicator,
     ScrollView,
     StyleSheet,
+    KeyboardAvoidingView,
+    TouchableWithoutFeedback,
+    Keyboard,
+    Platform,
 } from "react-native";
 import { useBill } from "@/src/presentation/hooks/useBill";
 import { useVotes } from "@/src/presentation/hooks/useVote";
@@ -14,6 +19,7 @@ import { useAuth } from "@/src/presentation/context/AuthContext";
 import { colors } from "@/src/ui/styles/colors";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { BillShare } from "@/src/domain/entities/bill.model";
+import { PullToRefresh } from "@/src/ui/components/PullToRefresh";
 
 interface Props {
     activityId: number;
@@ -28,6 +34,7 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
     const [amount, setAmount] = useState("");
     const [drinkType, setDrinkType] = useState("");
     const [phase, setPhase] = useState<"input" | "result">("input");
+    const [refreshing, setRefreshing] = useState(false);
 
     const drinkOptions = [
         { label: "🍺 Bière", value: "bière" },
@@ -38,9 +45,7 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
     ];
 
     useEffect(() => {
-        fetchBill().then(() => {
-            if (bill) setPhase("result");
-        });
+        fetchBill();
         fetchResults();
     }, []);
 
@@ -49,11 +54,17 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
     }, [bill]);
 
     const handleCreate = async () => {
+        Keyboard.dismiss();
         const totalAmount = parseFloat(amount);
         if (!totalAmount || totalAmount <= 0) return;
         if (!drinkType) return;
-
         await createBill({ totalAmount, drinkType });
+    };
+
+    const handleRefreshResult = async () => {
+        setRefreshing(true);
+        await fetchBill();
+        setRefreshing(false);
     };
 
     const getMedalEmoji = (rank: number) => {
@@ -69,12 +80,16 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
         return `${(percentage / maxPercentage) * 100}%`;
     };
 
+    // Phase résultat
     if (phase === "result" && bill) {
         const maxPercentage = Math.max(...bill.shares.map((s) => s.percentage));
         const myShare = bill.shares.find((s) => s.username === user?.username);
 
         return (
-            <ScrollView style={styles.screen}>
+            <ScrollView
+                style={styles.screen}
+                refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefreshResult} />}
+            >
                 <View style={styles.header}>
                     <TouchableOpacity onPress={onBack}>
                         <Text style={styles.backText}>← Retour</Text>
@@ -108,10 +123,7 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
                     return (
                         <View
                             key={index}
-                            style={[
-                                styles.shareCard,
-                                isMe && styles.shareCardMe,
-                            ]}
+                            style={[styles.shareCard, isMe && styles.shareCardMe]}
                         >
                             <View style={styles.shareHeader}>
                                 <View style={styles.shareLeft}>
@@ -137,7 +149,6 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
                                 </View>
                             </View>
 
-                         
                             <View style={styles.barContainer}>
                                 <View
                                     style={[
@@ -173,98 +184,116 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
         );
     }
 
+    // Phase saisie
     return (
-        <View style={styles.screen}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={onBack}>
-                    <Text style={styles.backText}>← Retour</Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputContainer}>
-                <Text style={styles.inputEmoji}>💰</Text>
-                <Text style={styles.inputTitle}>La note</Text>
-                <Text style={styles.inputSubtext}>
-                    Combien coûte la tournée ?
-                </Text>
-
-                <View style={styles.amountContainer}>
-                    <TextInput
-                        style={styles.amountInput}
-                        placeholder="0.00"
-                        placeholderTextColor={colors.textMuted}
-                        value={amount}
-                        onChangeText={setAmount}
-                        keyboardType="decimal-pad"
-                    />
-                    <Text style={styles.amountCurrency}>€</Text>
-                </View>
-
-                <Text style={styles.drinkLabel}>Boisson</Text>
-                <View style={styles.drinkContainer}>
-                    {drinkOptions.map((drink) => (
-                        <TouchableOpacity
-                            key={drink.value}
-                            style={[
-                                styles.drinkChip,
-                                drinkType === drink.value && styles.drinkChipActive,
-                            ]}
-                            onPress={() => setDrinkType(drink.value)}
-                        >
-                            <Text
-                                style={[
-                                    styles.drinkChipText,
-                                    drinkType === drink.value && styles.drinkChipTextActive,
-                                ]}
-                            >
-                                {drink.label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                {results.length > 0 && (
-                    <View style={styles.votePreview}>
-                        <Text style={styles.votePreviewTitle}>Classement des votes</Text>
-                        {results.map((r, i) => (
-                            <View key={i} style={styles.votePreviewRow}>
-                                <Text style={styles.votePreviewRank}>
-                                    {getMedalEmoji(r.rank)}
-                                </Text>
-                                <Text style={styles.votePreviewName}>{r.username}</Text>
-                                <Text
-                                    style={[
-                                        styles.votePreviewScore,
-                                        { color: r.score >= 0 ? colors.primary : colors.error },
-                                    ]}
-                                >
-                                    {r.score > 0 ? "+" : ""}{r.score}
-                                </Text>
-                            </View>
-                        ))}
-                    </View>
-                )}
-
-                {error && <Text style={styles.error}>{error}</Text>}
-
-                <TouchableOpacity
-                    style={[
-                        styles.calculateButton,
-                        (!amount || !drinkType) && styles.calculateButtonDisabled,
-                    ]}
-                    onPress={handleCreate}
-                    disabled={!amount || !drinkType || loading}
+        <KeyboardAvoidingView
+            style={styles.screen}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView
+                    style={{ flex: 1 }}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    {loading ? (
-                        <ActivityIndicator color={colors.white} />
-                    ) : (
-                        <Text style={styles.calculateButtonText}>
-                            Calculer la répartition 🧮
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={onBack}>
+                            <Text style={styles.backText}>← Retour</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.inputContainer}>
+                        <Text style={styles.inputEmoji}>💰</Text>
+                        <Text style={styles.inputTitle}>La note</Text>
+                        <Text style={styles.inputSubtext}>
+                            Combien coûte la tournée ?
                         </Text>
-                    )}
-                </TouchableOpacity>
-            </View>
-        </View>
+
+                        <View style={styles.amountContainer}>
+                            <TextInput
+                                style={styles.amountInput}
+                                placeholder="0.00"
+                                placeholderTextColor={colors.textMuted}
+                                value={amount}
+                                onChangeText={setAmount}
+                                keyboardType="decimal-pad"
+                                returnKeyType="done"
+                                onSubmitEditing={Keyboard.dismiss}
+                            />
+                            <Text style={styles.amountCurrency}>€</Text>
+                        </View>
+
+                        <Text style={styles.drinkLabel}>Boisson</Text>
+                        <View style={styles.drinkContainer}>
+                            {drinkOptions.map((drink) => (
+                                <TouchableOpacity
+                                    key={drink.value}
+                                    style={[
+                                        styles.drinkChip,
+                                        drinkType === drink.value && styles.drinkChipActive,
+                                    ]}
+                                    onPress={() => {
+                                        setDrinkType(drink.value);
+                                        Keyboard.dismiss();
+                                    }}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.drinkChipText,
+                                            drinkType === drink.value && styles.drinkChipTextActive,
+                                        ]}
+                                    >
+                                        {drink.label}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        {results.length > 0 && (
+                            <View style={styles.votePreview}>
+                                <Text style={styles.votePreviewTitle}>Classement des votes</Text>
+                                {results.map((r, i) => (
+                                    <View key={i} style={styles.votePreviewRow}>
+                                        <Text style={styles.votePreviewRank}>
+                                            {getMedalEmoji(r.rank)}
+                                        </Text>
+                                        <Text style={styles.votePreviewName}>{r.username}</Text>
+                                        <Text
+                                            style={[
+                                                styles.votePreviewScore,
+                                                { color: r.score >= 0 ? colors.primary : colors.error },
+                                            ]}
+                                        >
+                                            {r.score > 0 ? "+" : ""}{r.score}
+                                        </Text>
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+
+                        {error && <Text style={styles.error}>{error}</Text>}
+
+                        <TouchableOpacity
+                            style={[
+                                styles.calculateButton,
+                                (!amount || !drinkType) && styles.calculateButtonDisabled,
+                            ]}
+                            onPress={handleCreate}
+                            disabled={!amount || !drinkType || loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color={colors.white} />
+                            ) : (
+                                <Text style={styles.calculateButtonText}>
+                                    Calculer la répartition 🧮
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={{ height: 100 }} />
+                </ScrollView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -432,7 +461,7 @@ const styles = StyleSheet.create({
 
     inputContainer: {
         flex: 1,
-        justifyContent: "center",
+        paddingTop: spacing.xl,
     },
     inputEmoji: {
         fontSize: 50,
