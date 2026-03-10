@@ -8,6 +8,7 @@ export const useActivities = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const { isAuthenticated } = useAuth();
+    const [refreshing, setRefreshing] = useState(false)
 
     const fetchActivities = async () => {
         setLoading(true);
@@ -21,6 +22,19 @@ export const useActivities = () => {
             setLoading(false);
         }
     };
+        const handleRefresh = async () => {
+        setRefreshing(true);
+        setError(null);
+        try {
+            const data = await container.getActivities.execute();
+            setActivities(data);
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -28,5 +42,5 @@ export const useActivities = () => {
         }
     }, [isAuthenticated]);
 
-    return { activities, loading, error, refresh: fetchActivities };
+    return { activities, loading, refreshing, error, refresh: fetchActivities, handleRefresh };
 };
