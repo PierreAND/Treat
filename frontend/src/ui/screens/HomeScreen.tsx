@@ -22,8 +22,7 @@ import { PullToRefresh } from "../components/PullToRefresh";
 
 export const HomeScreen = () => {
     const { user, logout } = useAuth();
-    const { activities, loading, error, refresh } = useActivities();
-
+    const { activities, loading, error,refreshing,  refresh, handleRefresh } = useActivities();
     const [showForm, setShowForm] = useState(false);
     const [name, setName] = useState("");
     const [theme, setTheme] = useState("");
@@ -183,7 +182,7 @@ export const HomeScreen = () => {
     }
     return (
         <ScrollView style={styles.screen}
-        refreshControl={<PullToRefresh refreshing={loading} onRefresh={refresh} />}
+        refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
         >
 
             <View style={styles.header}>
@@ -610,7 +609,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
 
-    // Error
+
     error: {
         color: colors.error,
         textAlign: "center",
