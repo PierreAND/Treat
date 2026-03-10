@@ -6,6 +6,7 @@ export const useActivity = (id: number) => {
     const [activity, setActivity] = useState<Activity | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [refreshing, setRefreshing] = useState(false)
 
     const fetchActivity = async () => {
         setLoading(true);
@@ -65,5 +66,17 @@ export const useActivity = (id: number) => {
         }
     };
 
-    return { activity, loading, error, refresh: fetchActivity, invite, respond, start, stop };
+        const handleRefresh = async () => {
+        setRefreshing(true);
+        setError(null);
+        try {
+            const data = await container.getActivity.execute(id);
+            setActivity(data);
+        } catch (e: any) {
+            setError(e.message);
+        } finally {
+            setRefreshing(false);
+        }
+    };
+    return { activity, loading, refreshing, error, refresh: fetchActivity, invite, respond, start, stop, handleRefresh };
 };
