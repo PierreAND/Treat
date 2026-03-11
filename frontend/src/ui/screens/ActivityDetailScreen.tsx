@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -15,6 +15,7 @@ import { colors } from "@/src/ui/styles/colors";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { ActivityMember } from "@/src/domain/entities/activity.model";
 import { PullToRefresh } from "../components/PullToRefresh";
+import { container } from "@/src/infrastructure/injecteur/container";
 
 interface Props {
     activityId: number;
@@ -25,15 +26,27 @@ interface Props {
 }
 
 export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBill }: Props) => {
-    const { activity, loading, error, invite, start, stop, refresh, refreshing, handleRefresh} = useActivity(activityId);
+    const { activity, loading, error, invite, start, stop, refresh, refreshing, handleRefresh } = useActivity(activityId);
     const { user } = useAuth();
 
     const [username, setUsername] = useState("");
     const [inviteLoading, setInviteLoading] = useState(false);
     const [inviteError, setInviteError] = useState<string | null>(null);
     const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
-
+    const [allVoted, setAllVoted] = useState(false);
+    const [votedCount, setVotedCount] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
     const isCreator = activity?.creator === user?.username;
+
+    useEffect(() => {
+        if (activity && (activity.status === "voting" || activity.status === "finished")) {
+            container.getVoteCheck.execute(activityId).then((data) => {
+                setAllVoted(data.allVoted);
+                setVotedCount(data.votedCount);
+                setTotalCount(data.totalCount);
+            }).catch(console.error);
+        }
+    }, [activity]);
 
     const handleInvite = async () => {
         if (!username.trim()) return;
@@ -122,8 +135,8 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
 
     return (
         <ScrollView style={styles.screen}
-         refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
-         >
+            refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
+        >
 
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={onBack}>
@@ -170,15 +183,28 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
                     <Text style={styles.voteButtonText}>🗳️ Voter maintenant</Text>
                 </TouchableOpacity>
             )}
-          
+
 
             {(activity.status === "voting" || activity.status === "finished") && (
-                <TouchableOpacity
-                    style={styles.billAccessButton}
-                    onPress={() => onGoToBill(activityId)}
-                >
-                    <Text style={styles.billAccessButtonText}>💰 Voir la note</Text>
-                </TouchableOpacity>
+                <View>
+                    <Text style={styles.voteProgress}>
+                        🗳️ Votes : {votedCount}/{totalCount}
+                    </Text>
+                    {allVoted ? (
+                        <TouchableOpacity
+                            style={styles.billAccessButton}
+                            onPress={() => onGoToBill(activityId)}
+                        >
+                            <Text style={styles.billAccessButtonText}>💰 Voir la note</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <View style={styles.billDisabledButton}>
+                            <Text style={styles.billDisabledText}>
+                                💰 En attente de tous les votes ({votedCount}/{totalCount})
+                            </Text>
+                        </View>
+                    )}
+                </View>
             )}
 
             {activity.status === "pending" && isCreator && (
@@ -551,7 +577,7 @@ const styles = StyleSheet.create({
         marginTop: spacing.md,
         fontSize: 14,
     },
-      billAccessButton: {
+    billAccessButton: {
         backgroundColor: colors.primary + "15",
         padding: spacing.md,
         borderRadius: radius.md,
@@ -564,5 +590,26 @@ const styles = StyleSheet.create({
         color: colors.primary,
         fontSize: 16,
         fontWeight: "bold",
+    },
+    voteProgress: {
+        color: colors.textSecondary,
+        fontSize: 13,
+        textAlign: "center",
+        marginBottom: spacing.sm,
+    },
+    billDisabledButton: {
+        backgroundColor: colors.bgInput,
+        padding: spacing.md,
+        borderRadius: radius.md,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: colors.border,
+        marginBottom: spacing.lg,
+        opacity: 0.6,
+    },
+    billDisabledText: {
+        color: colors.textMuted,
+        fontSize: 14,
+        fontWeight: "600",
     },
 });
