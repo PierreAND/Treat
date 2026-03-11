@@ -13,6 +13,13 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
+
+
+
+
+
+
+
 #[Route('/api/activities/{activityId}/bill')]
 class BillController extends AbstractController
 {
@@ -24,13 +31,34 @@ class BillController extends AbstractController
         if (!$activity || $activity->getStatus() !== 'voting') {
             return $this->json(['message' => 'L\'activité n\'est pas en phase de vote'], 400);
         }
+        $members = $em->getRepository(ActivityMember::class)->findBy([
+            'activity' => $activity,
+            'status' => 'accepted',
+        ]);
+
+        foreach ($members as $member) {
+            $votes = $em->getRepository(Vote::class)->findBy([
+                'activity' => $activity,
+                'voter' => $member->getUser(),
+            ]);
+
+            if (count($votes) === 0) {
+                return $this->json([
+                    'message' => 'Tous les membres n\'ont pas encore voté'
+                ], 400);
+            }
+        }
+        $existingBill = $em->getRepository(Bill::class)->findOneBy(['activity' => $activity]);
+        if ($existingBill) {
+            return $this->json(['message' => 'Une note existe déjà pour cette activité'], 409);
+        }
 
         $data = json_decode($request->getContent(), true);
 
         if (!$data['totalAmount'] || !$data['drinkType']) {
             return $this->json(['message' => 'Montant et type de boisson requis'], 400);
         }
-
+     
         $votes = $em->getRepository(Vote::class)->findBy(['activity' => $activity]);
         $members = $em->getRepository(ActivityMember::class)->findBy([
             'activity' => $activity,
@@ -53,21 +81,21 @@ class BillController extends AbstractController
             }
         }
 
-        
+
         usort($scores, fn($a, $b) => $b['score'] <=> $a['score']);
 
-       
+
         $nbMembers = count($scores);
         $totalWeight = 0;
         $weights = [];
 
         for ($i = 0; $i < $nbMembers; $i++) {
-            $weight = $i + 1; 
+            $weight = $i + 1;
             $weights[] = $weight;
             $totalWeight += $weight;
         }
 
-      
+
         $bill = new Bill();
         $bill->setActivity($activity);
         $bill->setTotalAmount($data['totalAmount']);
