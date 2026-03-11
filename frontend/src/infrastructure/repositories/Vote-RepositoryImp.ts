@@ -58,4 +58,14 @@ async getVoteStatus(activityId: number): Promise<{ hasVoted: boolean }> {
 
     return response.json();
 }
+async getVoteCheck(activityId: number): Promise<{ allVoted: boolean; votedCount: number; totalCount: number }> {
+    const response = await fetch(`${this.baseUrl}/${activityId}/votes/check`, {
+        headers: await this.authHeaders(),
+    });
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erreur");
+    }
+    return response.json();
+}
 }
