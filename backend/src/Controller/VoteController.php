@@ -110,4 +110,42 @@ class VoteController extends AbstractController
 
         return $this->json(array_values($scores));
     }
+    #[Route('/check', name: 'vote_check_all', methods: ['GET'])]
+public function checkAllVoted(int $activityId, EntityManagerInterface $em): JsonResponse
+{
+    $activity = $em->getRepository(Activity::class)->find($activityId);
+
+    if (!$activity) {
+        return $this->json(['message' => 'Activité introuvable'], 404);
+    }
+
+    $members = $em->getRepository(ActivityMember::class)->findBy([
+        'activity' => $activity,
+        'status' => 'accepted',
+    ]);
+
+    $allVoted = true;
+    $votedCount = 0;
+    $totalCount = count($members);
+
+    foreach ($members as $member) {
+        $votes = $em->getRepository(Vote::class)->findBy([
+            'activity' => $activity,
+            'voter' => $member->getUser(),
+        ]);
+
+        if (count($votes) > 0) {
+            $votedCount++;
+        } else {
+            $allVoted = false;
+        }
+    }
+
+    return $this->json([
+        'allVoted' => $allVoted,
+        'votedCount' => $votedCount,
+        'totalCount' => $totalCount,
+    ]);
+}
+
 }
