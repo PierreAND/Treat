@@ -16,14 +16,10 @@ import { colors } from "@/src/ui/styles/colors";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { ActivityMember } from "@/src/domain/entities/activity.model";
 import { Rule } from "@/src/domain/entities/rule.model";
+import { VoteScreenProps } from "@/src/presentation/interface/VoteScreenType";
 
-interface Props {
-    activityId: number;
-    onBack: () => void;
-    onGoToBill: (activityId: number) => void;
-}
 
-export const VoteScreen = ({ activityId, onBack, onGoToBill }: Props) => {
+export const VoteScreen = ({ activityId, onBack, onGoToBill }: VoteScreenProps) => {
     const { activity, loading: activityLoading } = useActivity(activityId);
     const { user } = useAuth();
     const {
@@ -37,6 +33,10 @@ export const VoteScreen = ({ activityId, onBack, onGoToBill }: Props) => {
         getVotesForMember,
         getScorePreview,
         submitVotes,
+        allVoted,
+        totalCount,
+        votedCount,
+        checkVoteCount,
     } = useVotes(activityId);
 
     const [currentMemberIndex, setCurrentMemberIndex] = useState(0);
@@ -48,11 +48,12 @@ export const VoteScreen = ({ activityId, onBack, onGoToBill }: Props) => {
     }, []);
 
     useEffect(() => {
-    if (hasVoted) {
-        setPhase("submitted");
-    }
+        if (hasVoted) {
+            setPhase("submitted");
+            checkVoteCount();
+        }
     }, [hasVoted]);
-    
+
     const otherMembers = activity?.members.filter(
         (m) => m.status === "accepted" && m.username !== user?.username
     ) || [];
@@ -123,16 +124,23 @@ export const VoteScreen = ({ activityId, onBack, onGoToBill }: Props) => {
                 <Text style={styles.submittedSubtext}>
                     En attente des autres joueurs...
                 </Text>
+            {allVoted ? (
                 <TouchableOpacity
                     style={styles.billButton}
                     onPress={() => onGoToBill(activityId)}
                 >
                     <Text style={styles.billButtonText}>💰 Passer à la note</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.backButtonBottom} onPress={onBack}>
-                    <Text style={styles.backButtonBottomText}>← Retour</Text>
-                </TouchableOpacity>
-            </View>
+            ) : (
+                <Text style={styles.submittedSubtext}>
+                    🗳️ {votedCount}/{totalCount} votes reçus
+                </Text>
+            )}
+
+            <TouchableOpacity style={styles.backButtonBottom} onPress={onBack}>
+                <Text style={styles.backButtonBottomText}>← Retour</Text>
+            </TouchableOpacity>
+        </View>
         );
     }
 
