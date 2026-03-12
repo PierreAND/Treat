@@ -1,4 +1,3 @@
-// src/ui/screens/bill/BillScreen.tsx
 import React, { useState, useEffect } from "react";
 import {
     View,

@@ -16,6 +16,7 @@ import { spacing, radius } from "@/src/ui/styles/spacing";
 import { ActivityMember } from "@/src/domain/entities/activity.model";
 import { PullToRefresh } from "../components/PullToRefresh";
 import { container } from "@/src/infrastructure/injecteur/container";
+import { useVotes } from "@/src/presentation/hooks/useVote";
 
 interface Props {
     activityId: number;
@@ -28,24 +29,19 @@ interface Props {
 export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBill }: Props) => {
     const { activity, loading, error, invite, start, stop, refresh, refreshing, handleRefresh } = useActivity(activityId);
     const { user } = useAuth();
-
+    const { allVoted, votedCount, totalCount, checkVoteCount } = useVotes(activityId)
     const [username, setUsername] = useState("");
     const [inviteLoading, setInviteLoading] = useState(false);
     const [inviteError, setInviteError] = useState<string | null>(null);
     const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
-    const [allVoted, setAllVoted] = useState(false);
-    const [votedCount, setVotedCount] = useState(0);
-    const [totalCount, setTotalCount] = useState(0);
+
     const isCreator = activity?.creator === user?.username;
 
     useEffect(() => {
         if (activity && (activity.status === "voting" || activity.status === "finished")) {
-            container.getVoteCheck.execute(activityId).then((data) => {
-                setAllVoted(data.allVoted);
-                setVotedCount(data.votedCount);
-                setTotalCount(data.totalCount);
-            }).catch(console.error);
+            checkVoteCount()
         }
+
     }, [activity]);
 
     const handleInvite = async () => {
