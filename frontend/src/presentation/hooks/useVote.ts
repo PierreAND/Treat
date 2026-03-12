@@ -18,6 +18,9 @@ export const useVotes = (activityId: number) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasVoted, setHasVoted] = useState(false)
+    const [allVoted, setAllVoted] = useState(false)
+    const [votedCount, setVotedCount] = useState(0)
+    const [totalCount, setTotalCount] = useState(0)
 
      const checkVoteStatus = async () => {
         try {
@@ -93,6 +96,14 @@ export const useVotes = (activityId: number) => {
         }
     };
 
+    const checkVoteCount = async () => {
+        const data = await container.getVoteCheck.execute(activityId)
+        setAllVoted (data.allVoted)
+        setVotedCount(data.votedCount)
+        setTotalCount(data.totalCount)
+    };
+
+
     return {
         pendingVotes,
         results,
@@ -106,5 +117,9 @@ export const useVotes = (activityId: number) => {
         getScorePreview,
         submitVotes,
         fetchResults,
+        checkVoteCount,
+        totalCount,
+        allVoted,
+        votedCount
     };
 };
