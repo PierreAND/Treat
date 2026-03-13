@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { act, useState } from "react";
 import {
     View,
     Text,
@@ -22,7 +22,7 @@ import { PullToRefresh } from "../components/PullToRefresh";
 
 export const HomeScreen = () => {
     const { user, logout } = useAuth();
-    const { activities, loading, error,refreshing,  refresh, handleRefresh } = useActivities();
+    const { activities, loading, error, refreshing, refresh, handleRefresh } = useActivities();
     const [showForm, setShowForm] = useState(false);
     const [name, setName] = useState("");
     const [theme, setTheme] = useState("");
@@ -34,7 +34,9 @@ export const HomeScreen = () => {
     const themes = ["sport", "sortie", "weekend"];
 
     const invitations = activities.filter((a) => a.memberStatus === "invited");
-    const myActivities = activities.filter((a) => a.memberStatus === "accepted");
+    const myActivities = activities.filter((a) => a.memberStatus === "accepted" && a.status !== "finished");
+    const archivedActivities = activities.filter((a) => a.status === "finished");
+   
 
     const handleCreate = async () => {
         if (!name || !theme) {
@@ -182,7 +184,7 @@ export const HomeScreen = () => {
     }
     return (
         <ScrollView style={styles.screen}
-        refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
+            refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
         >
 
             <View style={styles.header}>
@@ -279,23 +281,29 @@ export const HomeScreen = () => {
 
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>🏆 Mes activités</Text>
-                {myActivities.length === 0 ? (
+                {myActivities.length === 0  ? (
                     <View style={styles.emptyState}>
                         <Text style={styles.emptyEmoji}>🥊</Text>
-                        <Text style={styles.emptyText}>
-                            Aucune activité pour le moment
-                        </Text>
-                        <Text style={styles.emptySubtext}>
-                            Crée ta première activité !
-                        </Text>
+                        <Text style={styles.emptyText}>Aucune activité pour le moment</Text>
+                        <Text style={styles.emptySubtext}>Crée ta première activité !</Text>
                     </View>
                 ) : (
-                    <FlatList
-                        data={myActivities}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={renderActivity}
-                        scrollEnabled={false}
-                    />
+                    myActivities.map((item) => (
+                        <View key={item.id.toString()}>
+                            {renderActivity({ item })}
+                        </View>
+                    ))
+                )}
+
+                {archivedActivities.length > 0 && (
+                    <>
+                        <Text style={styles.sectionTitle}>🗄️ Activités terminées</Text>
+                        {archivedActivities.map((item) => (
+                            <View key={item.id.toString()}>
+                                {renderActivity({ item })}
+                            </View>
+                        ))}
+                    </>
                 )}
             </View>
 
