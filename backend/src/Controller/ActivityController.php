@@ -1,10 +1,12 @@
 <?php
-
 namespace App\Controller;
 
 use App\Entity\Activity;
 use App\Entity\ActivityMember;
 use App\Entity\Rule;
+use App\Entity\User;
+use App\Repository\ActivityMemberRepository;
+use App\Repository\ActivityRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,12 +16,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/activities')]
 class ActivityController extends AbstractController
 {
+    public function __construct(
+        private ActivityMemberRepository $activityMemberRepository,
+    ) {}
+
     #[Route('', name: 'activity_list', methods: ['GET'])]
-    public function list(EntityManagerInterface $em): JsonResponse
+    public function list(): JsonResponse
     {
         $user = $this->getUser();
-
-        $activities = $em->getRepository(ActivityMember::class)->findBy(['user' => $user]);
+        $memberships = $this->activityMemberRepository->findByUser($user);
 
         $data = array_map(fn(ActivityMember $m) => [
             'id' => $m->getActivity()->getId(),
@@ -29,7 +34,7 @@ class ActivityController extends AbstractController
             'creator' => $m->getActivity()->getCreator()->getUsername(),
             'memberStatus' => $m->getStatus(),
             'createdAt' => $m->getActivity()->getCreatedAt()->format('Y-m-d H:i:s'),
-        ], $activities);
+        ], $memberships);
 
         return $this->json($data);
     }
@@ -55,8 +60,7 @@ class ActivityController extends AbstractController
         $member->setStatus('accepted');
         $em->persist($member);
 
-        $defaultRules = $this->getDefaultRules($data['theme']);
-        foreach ($defaultRules as $ruleData) {
+        foreach ($this->getDefaultRules($data['theme']) as $ruleData) {
             $rule = new Rule();
             $rule->setName($ruleData['name']);
             $rule->setType($ruleData['type']);
@@ -90,7 +94,7 @@ class ActivityController extends AbstractController
     }
 
     #[Route('/{id}', name: 'activity_show', methods: ['GET'])]
-    public function show(Activity $activity, EntityManagerInterface $em): JsonResponse
+    public function show(Activity $activity): JsonResponse
     {
         $members = array_map(fn(ActivityMember $m) => [
             'id' => $m->getUser()->getId(),
@@ -123,16 +127,12 @@ class ActivityController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        $user = $em->getRepository(\App\Entity\User::class)->findOneBy(['username' => $data['username']]);
+        $user = $em->getRepository(User::class)->findOneBy(['username' => $data['username']]);
         if (!$user) {
             return $this->json(['message' => 'Utilisateur introuvable'], 404);
         }
 
-        $existing = $em->getRepository(ActivityMember::class)->findOneBy([
-            'user' => $user,
-            'activity' => $activity,
-        ]);
-        if ($existing) {
+        if ($this->activityMemberRepository->findByUserAndActivity($user, $activity)) {
             return $this->json(['message' => 'Déjà membre'], 409);
         }
 
@@ -153,10 +153,7 @@ class ActivityController extends AbstractController
         $user = $this->getUser();
         $data = json_decode($request->getContent(), true);
 
-        $member = $em->getRepository(ActivityMember::class)->findOneBy([
-            'user' => $user,
-            'activity' => $activity,
-        ]);
+        $member = $this->activityMemberRepository->findByUserAndActivity($user, $activity);
 
         if (!$member || $member->getStatus() !== 'invited') {
             return $this->json(['message' => 'Pas d\'invitation trouvée'], 404);
@@ -185,7 +182,6 @@ class ActivityController extends AbstractController
         return $this->json(['message' => 'Activité démarrée', 'status' => 'active']);
     }
 
-   
     #[Route('/{id}/stop', name: 'activity_stop', methods: ['POST'])]
     public function stop(Activity $activity, EntityManagerInterface $em): JsonResponse
     {
