@@ -15,18 +15,12 @@ import { colors } from "@/src/ui/styles/colors";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { ActivityMember } from "@/src/domain/entities/activity.model";
 import { PullToRefresh } from "../components/PullToRefresh";
-import { container } from "@/src/infrastructure/injecteur/container";
 import { useVotes } from "@/src/presentation/hooks/useVote";
+import { ActivityProps } from "@/src/presentation/interface/ActivityScreenType";
 
-interface Props {
-    activityId: number;
-    onBack: () => void;
-    onGoToVote: (activityId: number) => void;
-    onGoToBill: (activityId: number) => void;
 
-}
 
-export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBill }: Props) => {
+export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBill }: ActivityProps) => {
     const { activity, loading, error, invite, start, stop, refresh, refreshing, handleRefresh } = useActivity(activityId);
     const { user } = useAuth();
     const { allVoted, votedCount, totalCount, checkVoteCount } = useVotes(activityId)
