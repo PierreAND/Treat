@@ -19,13 +19,11 @@ import { colors } from "@/src/ui/styles/colors";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { BillShare } from "@/src/domain/entities/bill.model";
 import { PullToRefresh } from "@/src/ui/components/PullToRefresh";
+import { BillProps } from "@/src/presentation/interface/BillScreenType";
 
-interface Props {
-    activityId: number;
-    onBack: () => void;
-}
 
-export const BillScreen = ({ activityId, onBack }: Props) => {
+
+export const BillScreen = ({ activityId, onBack }: BillProps) => {
     const { bill, loading, error, createBill, fetchBill } = useBill(activityId);
     const { results, fetchResults } = useVotes(activityId);
     const { user } = useAuth();
@@ -79,7 +77,7 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
         return `${(percentage / maxPercentage) * 100}%`;
     };
 
-    // Phase résultat
+
     if (phase === "result" && bill) {
         const maxPercentage = Math.max(...bill.shares.map((s) => s.percentage));
         const myShare = bill.shares.find((s) => s.username === user?.username);
@@ -183,7 +181,7 @@ export const BillScreen = ({ activityId, onBack }: Props) => {
         );
     }
 
-    // Phase saisie
+    
     return (
         <KeyboardAvoidingView
             style={styles.screen}
