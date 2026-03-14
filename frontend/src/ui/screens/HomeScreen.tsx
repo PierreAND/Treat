@@ -130,6 +130,11 @@ export const HomeScreen = () => {
             </View>
             <Text style={styles.activityName}>{item.name}</Text>
             <Text style={styles.activityCreator}>Créé par {item.creator}</Text>
+            <Text style={styles.activityDate}>
+                
+                
+                 {new Date(item.createdAt).toLocaleDateString("fr-FR")}
+            </Text>
         </TouchableOpacity>
     );
     if (loading) {
@@ -302,7 +307,9 @@ export const HomeScreen = () => {
                     ) : (
                         myActivities.map((item) => (
                             <View key={item.id.toString()}>
-                                {renderActivity({ item })}
+                                {renderActivity({ item })
+
+                                }
                             </View>
                         ))
                     )}
@@ -663,5 +670,10 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 18,
     },
+    activityDate: {
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: 2,
+},
 
 });
