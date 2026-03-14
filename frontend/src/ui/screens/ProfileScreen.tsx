@@ -18,11 +18,11 @@ interface Props {
 }
 
 const getReputationConfig = (score: number) => {
-    if (score >= 80) return { label: "Bon joueur 🏆", color: colors.primary };
-    if (score >= 60) return { label: "Fiable 👍", color: colors.accent };
-    if (score >= 40) return { label: "Neutre 😐", color: colors.warning };
-    if (score >= 20) return { label: "Agitateur 👀", color: colors.error };
-    return { label: "Chaotique 💀", color: "#ff0000" };
+    if (score >= 80) return { label: "Bon joueur 🏆", color: colors.primary, avatar: "😇" };
+    if (score >= 60) return { label: "Fiable 👍", color: colors.accent, avatar: "😊" };
+    if (score >= 40) return { label: "Neutre 😐", color: colors.warning, avatar: "😐" };
+    if (score >= 20) return { label: "Agitateur 👀", color: colors.error, avatar: "😈" };
+    return { label: "Chaotique 💀", color: "#ff0000", avatar: "💀" };
 };
 
 export const ProfileScreen = ({ username, onBack }: Props) => {
@@ -63,10 +63,8 @@ export const ProfileScreen = ({ username, onBack }: Props) => {
             </View>
 
             <View style={styles.avatarSection}>
-                <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                        {username.charAt(0).toUpperCase()}
-                    </Text>
+                <View style={[styles.avatar, { borderColor: config.color, backgroundColor: config.color + "20" }]}>
+                    <Text style={styles.avatarEmoji}>{config.avatar}</Text>
                 </View>
                 <Text style={styles.username}>{username}</Text>
             </View>
@@ -129,7 +127,7 @@ export const ProfileScreen = ({ username, onBack }: Props) => {
 
             <View style={{ height: 40 }} />
         </ScrollView>
-       
+
     );
 };
 
@@ -162,18 +160,12 @@ const styles = StyleSheet.create({
         width: 90,
         height: 90,
         borderRadius: 45,
-        backgroundColor: colors.accent + "30",
         justifyContent: "center",
         alignItems: "center",
         borderWidth: 3,
-        borderColor: colors.accent,
         marginBottom: spacing.md,
     },
-    avatarText: {
-        color: colors.accent,
-        fontSize: 40,
-        fontWeight: "bold",
-    },
+
     username: {
         fontSize: 24,
         fontWeight: "bold",
@@ -250,17 +242,26 @@ const styles = StyleSheet.create({
         marginBottom: spacing.md,
     },
     logoutButton: {
-    backgroundColor: colors.bgSecondary,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.error + "40",
-    marginTop: spacing.lg,
-},
-logoutButtonText: {
-    color: colors.error,
-    fontSize: 15,
-    fontWeight: "600",
-},
+        backgroundColor: colors.bgSecondary,
+        padding: spacing.md,
+        borderRadius: radius.md,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: colors.error + "40",
+        marginTop: spacing.lg,
+    },
+    logoutButtonText: {
+        color: colors.error,
+        fontSize: 15,
+        fontWeight: "600",
+    },
+
+    avatarEmoji: {
+        fontSize: 44,
+    },
+    reputationBadge: {
+        fontSize: 14,
+        fontWeight: "600",
+        marginTop: 4,
+    },
 });
