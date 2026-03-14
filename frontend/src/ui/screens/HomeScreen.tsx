@@ -16,9 +16,11 @@ import { container } from "@/src/infrastructure/injecteur/container";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { ActivitySummary } from "@/src/domain/entities/activity.model";
 import { ActivityDetailScreen } from "./ActivityDetailScreen";
+import { ProfileScreen } from "./ProfileScreen";
 import { VoteScreen } from "./VoteScreen"
 import { BillScreen } from "./BillScreen"
 import { PullToRefresh } from "../components/PullToRefresh";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const HomeScreen = () => {
     const { user, logout } = useAuth();
@@ -30,13 +32,14 @@ export const HomeScreen = () => {
     const [formError, setFormError] = useState<string | null>(null);
     const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null)
     const [voteActivityId, setVoteActivityId] = useState<number | null>(null);
-    const [billActivityId, setBillActivityId] = useState<number | null>(null)
+    const [billActivityId, setBillActivityId] = useState<number | null>(null);
+    const [profileUsername, setProfileUsername] = useState<string | null>(null);
     const themes = ["sport", "sortie", "weekend"];
 
     const invitations = activities.filter((a) => a.memberStatus === "invited");
     const myActivities = activities.filter((a) => a.memberStatus === "accepted" && a.status !== "finished");
     const archivedActivities = activities.filter((a) => a.status === "finished");
-   
+
 
     const handleCreate = async () => {
         if (!name || !theme) {
@@ -182,135 +185,145 @@ export const HomeScreen = () => {
             />
         );
     }
+    if (profileUsername) {
+        return (
+            <ProfileScreen
+                username={profileUsername}
+                onBack={() => setProfileUsername(null)}
+            />
+        );
+    }
     return (
-        <ScrollView style={styles.screen}
-            refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
-        >
+        <SafeAreaView style={styles.safeArea}>
+            <ScrollView style={styles.screen}
+                refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
+            >
 
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.greeting}>Hey {user?.username} 👊</Text>
-                    <Text style={styles.subtitle}>Prêt pour l&apos;action ?</Text>
-                </View>
-                <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-                    <Text style={styles.logoutText}>Déconnexion</Text>
-                </TouchableOpacity>
-            </View>
-
-
-            {!showForm && (
-                <TouchableOpacity style={styles.createButton} onPress={() => setShowForm(true)}>
-                    <Text style={styles.createButtonText}>+ Nouvelle activité</Text>
-                </TouchableOpacity>
-            )}
-
-
-            {showForm && (
-                <View style={styles.formCard}>
-                    <View style={styles.formHeader}>
-                        <Text style={styles.formTitle}>Créer une activité</Text>
-                        <TouchableOpacity onPress={() => setShowForm(false)}>
-                            <Text style={styles.formClose}>✕</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {formError && <Text style={styles.formError}>{formError}</Text>}
-
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Nom de l'activité"
-                        placeholderTextColor={colors.textMuted}
-                        value={name}
-                        onChangeText={setName}
-                    />
-
-                    <Text style={styles.themeLabel}>Thème</Text>
-                    <View style={styles.themeContainer}>
-                        {themes.map((t) => (
-                            <TouchableOpacity
-                                key={t}
-                                style={[
-                                    styles.themeChip,
-                                    theme === t && styles.themeChipActive,
-                                ]}
-                                onPress={() => setTheme(t)}
-                            >
-                                <Text
-                                    style={[
-                                        styles.themeChipText,
-                                        theme === t && styles.themeChipTextActive,
-                                    ]}
-                                >
-                                    {t === "sport" && "⚽ "}
-                                    {t === "sortie" && "🎉 "}
-                                    {t === "weekend" && "🏖️ "}
-                                    {t.charAt(0).toUpperCase() + t.slice(1)}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-
+                <View style={styles.headerActions}>
                     <TouchableOpacity
-                        style={styles.submitButton}
-                        onPress={handleCreate}
-                        disabled={creating}
+                        style={styles.profileButton}
+                        onPress={() => setProfileUsername(user?.username || "")}
                     >
-                        {creating ? (
-                            <ActivityIndicator color={colors.white} />
-                        ) : (
-                            <Text style={styles.submitButtonText}>Créer 🚀</Text>
-                        )}
+                        <Text style={styles.profileButtonText}>
+                            {user?.username.charAt(0).toUpperCase()}
+                        </Text>
                     </TouchableOpacity>
                 </View>
-            )}
 
-            {invitations.length > 0 && (
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
-                        📩 Invitations ({invitations.length})
-                    </Text>
-                    <FlatList
-                        data={invitations}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={renderInvitation}
-                        scrollEnabled={false}
-                    />
-                </View>
-            )}
-
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>🏆 Mes activités</Text>
-                {myActivities.length === 0  ? (
-                    <View style={styles.emptyState}>
-                        <Text style={styles.emptyEmoji}>🥊</Text>
-                        <Text style={styles.emptyText}>Aucune activité pour le moment</Text>
-                        <Text style={styles.emptySubtext}>Crée ta première activité !</Text>
-                    </View>
-                ) : (
-                    myActivities.map((item) => (
-                        <View key={item.id.toString()}>
-                            {renderActivity({ item })}
-                        </View>
-                    ))
+                {!showForm && (
+                    <TouchableOpacity style={styles.createButton} onPress={() => setShowForm(true)}>
+                        <Text style={styles.createButtonText}>+ Nouvelle activité</Text>
+                    </TouchableOpacity>
                 )}
 
-                {archivedActivities.length > 0 && (
-                    <>
-                        <Text style={styles.sectionTitle}>🗄️ Activités terminées</Text>
-                        {archivedActivities.map((item) => (
+
+                {showForm && (
+                    <View style={styles.formCard}>
+                        <View style={styles.formHeader}>
+                            <Text style={styles.formTitle}>Créer une activité</Text>
+                            <TouchableOpacity onPress={() => setShowForm(false)}>
+                                <Text style={styles.formClose}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {formError && <Text style={styles.formError}>{formError}</Text>}
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nom de l'activité"
+                            placeholderTextColor={colors.textMuted}
+                            value={name}
+                            onChangeText={setName}
+                        />
+
+                        <Text style={styles.themeLabel}>Thème</Text>
+                        <View style={styles.themeContainer}>
+                            {themes.map((t) => (
+                                <TouchableOpacity
+                                    key={t}
+                                    style={[
+                                        styles.themeChip,
+                                        theme === t && styles.themeChipActive,
+                                    ]}
+                                    onPress={() => setTheme(t)}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.themeChipText,
+                                            theme === t && styles.themeChipTextActive,
+                                        ]}
+                                    >
+                                        {t === "sport" && "⚽ "}
+                                        {t === "sortie" && "🎉 "}
+                                        {t === "weekend" && "🏖️ "}
+                                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        <TouchableOpacity
+                            style={styles.submitButton}
+                            onPress={handleCreate}
+                            disabled={creating}
+                        >
+                            {creating ? (
+                                <ActivityIndicator color={colors.white} />
+                            ) : (
+                                <Text style={styles.submitButtonText}>Créer 🚀</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                )}
+
+                {invitations.length > 0 && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>
+                            📩 Invitations ({invitations.length})
+                        </Text>
+                        <FlatList
+                            data={invitations}
+                            keyExtractor={(item) => item.id.toString()}
+                            renderItem={renderInvitation}
+                            scrollEnabled={false}
+                        />
+                    </View>
+                )}
+
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>🏆 Mes activités</Text>
+                    {myActivities.length === 0 ? (
+                        <View style={styles.emptyState}>
+                            <Text style={styles.emptyEmoji}>🥊</Text>
+                            <Text style={styles.emptyText}>Aucune activité pour le moment</Text>
+                            <Text style={styles.emptySubtext}>Crée ta première activité !</Text>
+                        </View>
+                    ) : (
+                        myActivities.map((item) => (
                             <View key={item.id.toString()}>
                                 {renderActivity({ item })}
                             </View>
-                        ))}
-                    </>
-                )}
-            </View>
+                        ))
+                    )}
 
-            {error && <Text style={styles.error}>{error}</Text>}
+                    {archivedActivities.length > 0 && (
+                        <>
+                            <Text style={styles.sectionTitle}>🗄️ Activités terminées</Text>
+                            {archivedActivities.map((item) => (
+                                <View key={item.id.toString()}>
+                                    {renderActivity({ item })}
+                                </View>
+                            ))}
+                        </>
+                    )}
+                </View>
 
-            <View style={{ height: 40 }} />
-        </ScrollView>
+                {error && <Text style={styles.error}>{error}</Text>}
+
+                <View style={{ height: 40 }} />
+            </ScrollView>
+        </SafeAreaView>
     );
 };
 
@@ -331,12 +344,16 @@ const styles = StyleSheet.create({
         marginTop: spacing.md,
         fontSize: 14,
     },
+    safeArea: {
+        flex: 1,
+        backgroundColor: colors.bgPrimary,
+    },
 
     header: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingTop: 60,
+        paddingTop: spacing.md,
         paddingBottom: spacing.lg,
     },
     greeting: {
@@ -624,4 +641,27 @@ const styles = StyleSheet.create({
         marginTop: spacing.md,
         fontSize: 14,
     },
+    headerActions: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        alignItems: "center",
+        paddingTop: spacing.md,
+        marginBottom: spacing.md,
+    },
+    profileButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: colors.accent + "30",
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 2,
+        borderColor: colors.accent,
+    },
+    profileButtonText: {
+        color: colors.accent,
+        fontWeight: "bold",
+        fontSize: 18,
+    },
+
 });

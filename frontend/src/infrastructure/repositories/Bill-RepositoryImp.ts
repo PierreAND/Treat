@@ -1,4 +1,3 @@
-// src/infrastructure/api/ApiBillRepository.ts
 import { BillRepository } from "@/src/domain/repositories/Bill-Repository";
 import { Bill, CreateBillPayload } from "@/src/domain/entities/bill.model";
 import { environment } from "@/src/environment";
