@@ -23,7 +23,7 @@ import { PullToRefresh } from "../components/PullToRefresh";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export const HomeScreen = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const { activities, loading, error, refreshing, refresh, handleRefresh } = useActivities();
     const [showForm, setShowForm] = useState(false);
     const [name, setName] = useState("");
