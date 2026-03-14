@@ -14,3 +14,13 @@ export interface RegisterPayload {
     username: string,
     password: string
 }
+
+
+export interface Profile {
+    username: string
+    totalActivities: number
+    totalPoints: number
+    bonusReceived: number
+    malusReceived: number
+    reputationScore: number
+}
