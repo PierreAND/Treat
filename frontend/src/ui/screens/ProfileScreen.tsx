@@ -112,13 +112,13 @@ export const ProfileScreen = ({ username, onBack }: Props) => {
                     <Text style={[styles.statValue, { color: colors.primary }]}>
                         {profile.bonusReceived}
                     </Text>
-                    <Text style={styles.statLabel}>👍 Bonus</Text>
+                    <Text style={styles.statLabel}> Bonus</Text>
                 </View>
                 <View style={styles.statCard}>
                     <Text style={[styles.statValue, { color: colors.error }]}>
                         {profile.malusReceived}
                     </Text>
-                    <Text style={styles.statLabel}>👎 Malus</Text>
+                    <Text style={styles.statLabel}> Malus</Text>
                 </View>
             </View>
 
