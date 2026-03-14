@@ -16,3 +16,11 @@ export interface VoteDetail {
   points: number;
   from: string;
 }
+
+export interface PendingVote {
+    targetId: number;
+    targetUsername: string;
+    ruleId: number;
+    ruleName: string;
+    points: number;
+}

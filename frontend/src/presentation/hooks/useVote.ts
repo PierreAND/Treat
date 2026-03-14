@@ -1,16 +1,10 @@
 import { useState } from "react";
-import { VotePayload, VoteResult } from "@/src/domain/entities/vote.model";
+import { VotePayload, VoteResult, PendingVote } from "@/src/domain/entities/vote.model";
 import { Rule } from "@/src/domain/entities/rule.model";
 import { ActivityMember } from "@/src/domain/entities/activity.model";
 import { container } from "@/src/infrastructure/injecteur/container";
 
-export interface PendingVote {
-    targetId: number;
-    targetUsername: string;
-    ruleId: number;
-    ruleName: string;
-    points: number;
-}
+
 
 export const useVotes = (activityId: number) => {
     const [pendingVotes, setPendingVotes] = useState<PendingVote[]>([]);
