@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Activity;
@@ -6,7 +7,7 @@ use App\Entity\ActivityMember;
 use App\Entity\Rule;
 use App\Entity\User;
 use App\Repository\ActivityMemberRepository;
-use App\Repository\ActivityRepository;
+use App\Repository\RuleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -197,6 +198,33 @@ class ActivityController extends AbstractController
         $em->flush();
 
         return $this->json(['message' => 'Phase de vote ouverte', 'status' => 'voting']);
+    }
+    #[Route('/{id}/rules', name: 'activity_add_rule', methods: ['POST'])]
+    public function addRule(Activity $activity, Request $request, RuleRepository $ruleRepository): JsonResponse
+    {
+        if ($activity->getCreator() !== $this->getUser()) {
+            return $this->json(['message' => 'Seul le créateur peut ajouter des règles'], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data['name'] || !$data['type'] || !isset($data['points'])) {
+            return $this->json(['message' => 'Nom, type et points requis'], 400);
+        }
+
+        if (!in_array($data['type'], ['bonus', 'malus'])) {
+            return $this->json(['message' => 'Type invalide (bonus ou malus)'], 400);
+        }
+
+        $rule = $ruleRepository->createRule($activity, $data['name'], $data['type'], $data['points']);
+
+        return $this->json([
+            'id' => $rule->getId(),
+            'name' => $rule->getName(),
+            'type' => $rule->getType(),
+            'points' => $rule->getPoints(),
+            'isDefault' => $rule->isDefault(),
+        ], 201);
     }
 
     private function getDefaultRules(string $theme): array
