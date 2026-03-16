@@ -8,6 +8,7 @@ import {
     ActivityIndicator,
     ScrollView,
     StyleSheet,
+    Modal,
 } from "react-native";
 import { useActivity } from "@/src/presentation/hooks/useActivity";
 import { useAuth } from "@/src/presentation/context/AuthContext";
@@ -16,6 +17,7 @@ import { spacing, radius } from "@/src/ui/styles/spacing";
 import { ActivityMember } from "@/src/domain/entities/activity.model";
 import { PullToRefresh } from "../components/PullToRefresh";
 import { useVotes } from "@/src/presentation/hooks/useVote";
+import { useRule } from "@/src/presentation/hooks/useRules";
 import { ActivityProps } from "@/src/presentation/interface/ActivityScreenType";
 
 
@@ -28,6 +30,12 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
     const [inviteLoading, setInviteLoading] = useState(false);
     const [inviteError, setInviteError] = useState<string | null>(null);
     const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
+    const { addRule, loading: addRuleLoading, error: addRuleEroor } = useRule();
+    const [ruleModalVisible, setRuleModalVisible] = useState(false);
+    const [ruleName, setRuleName] = useState("");
+    const [ruleType, setRuleType] = useState<"bonus" | "malus">("bonus");
+    const [rulePoints, setRulePoints] = useState("");
+
 
     const isCreator = activity?.creator === user?.username;
 
@@ -37,6 +45,23 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
         }
 
     }, [activity]);
+
+
+    const handleRule = async () => {
+        if (!ruleName.trim() || !rulePoints.trim()) return;
+        const result = await addRule(activityId, {
+            name: ruleName.trim(),
+            type: ruleType,
+            points: parseInt(rulePoints, 10)
+        });
+        if (result) {
+            setRuleName("");
+            setRulePoints("");
+            setRuleType("bonus")
+            setRuleModalVisible(false)
+            refresh()
+        }
+    }
 
     const handleInvite = async () => {
         if (!username.trim()) return;
@@ -259,12 +284,11 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
                     />
                 </View>
             )}
+            <View style={styles.rulesSection}>
+                <Text style={styles.sectionTitle}>📋 Règles</Text>
 
-
-            {activity.rules && activity.rules.length > 0 && (
-                <View style={styles.rulesSection}>
-                    <Text style={styles.sectionTitle}>📋 Règles</Text>
-                    {activity.rules.map((rule) => (
+                {activity.rules && activity.rules.length > 0 ? (
+                    activity.rules.map((rule) => (
                         <View key={rule.id} style={styles.ruleCard}>
                             <View style={styles.ruleLeft}>
                                 <Text style={styles.ruleName}>{rule.name}</Text>
@@ -295,13 +319,79 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
                                 </Text>
                             </View>
                         </View>
-                    ))}
+                    ))
+                ) : (
+                    <Text style={styles.emptyText}>Aucune règle pour le moment</Text>
+                )}
+
+                {isCreator && (activity.status === "pending" || activity.status === "active") && (
+                    <TouchableOpacity
+                        style={styles.addRuleButton}
+                        onPress={() => setRuleModalVisible(true)}
+                    >
+                        <Text style={styles.addRuleButtonText}>+ Ajouter une règle</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+            <Modal visible={ruleModalVisible} transparent animationType="slide">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Nouvelle règle</Text>
+
+                        {addRuleEroor && <Text style={styles.inviteError}>{addRuleEroor}</Text>}
+
+                        <TextInput
+                            style={styles.modalInput}
+                            placeholder="Nom de la règle"
+                            placeholderTextColor={colors.textMuted}
+                            value={ruleName}
+                            onChangeText={setRuleName}
+                        />
+
+                        <View style={styles.typeRow}>
+                            <TouchableOpacity
+                                style={[styles.typeButton, ruleType === "bonus" && styles.typeButtonActiveBonus]}
+                                onPress={() => setRuleType("bonus")}
+                            >
+                                <Text style={[styles.typeButtonText, ruleType === "bonus" && styles.typeButtonTextActive]}>
+                                    👍 Bonus
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.typeButton, ruleType === "malus" && styles.typeButtonActiveMalus]}
+                                onPress={() => setRuleType("malus")}
+                            >
+                                <Text style={[styles.typeButtonText, ruleType === "malus" && styles.typeButtonTextActive]}>
+                                    👎 Malus
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <TextInput
+                            style={styles.modalInput}
+                            placeholder="Points (ex: 2)"
+                            placeholderTextColor={colors.textMuted}
+                            value={rulePoints}
+                            onChangeText={setRulePoints}
+                            keyboardType="numeric"
+                        />
+
+                        <View style={styles.modalActions}>
+                            <TouchableOpacity style={styles.modalCancel} onPress={() => setRuleModalVisible(false)}>
+                                <Text style={styles.modalCancelText}>Annuler</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalSubmit, addRuleLoading && { opacity: 0.5 }]}
+                                onPress={handleRule}
+                                disabled={addRuleLoading}
+                            >
+                                <Text style={styles.modalSubmitText}>{addRuleLoading ? "..." : "Créer"}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 </View>
-            )}
+            </Modal>
 
-            {error && <Text style={styles.error}>{error}</Text>}
-
-            <View style={{ height: 40 }} />
         </ScrollView>
     );
 };
@@ -600,6 +690,105 @@ const styles = StyleSheet.create({
     billDisabledText: {
         color: colors.textMuted,
         fontSize: 14,
+        fontWeight: "600",
+    },
+    addRuleButton: {
+        backgroundColor: colors.bgSecondary,
+        padding: spacing.md,
+        borderRadius: radius.md,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: colors.primary + "40",
+        borderStyle: "dashed",
+        marginTop: spacing.sm,
+    },
+    addRuleButtonText: {
+        color: colors.primary,
+        fontSize: 15,
+        fontWeight: "600",
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.6)",
+        justifyContent: "center",
+        padding: spacing.lg,
+    },
+    modalContent: {
+        backgroundColor: colors.bgSecondary,
+        borderRadius: radius.lg,
+        padding: spacing.lg,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: colors.textPrimary,
+        marginBottom: spacing.lg,
+        textAlign: "center",
+    },
+    modalInput: {
+        backgroundColor: colors.bgInput,
+        borderRadius: radius.md,
+        padding: spacing.md,
+        color: colors.textPrimary,
+        fontSize: 15,
+        marginBottom: spacing.md,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    typeRow: {
+        flexDirection: "row",
+        gap: spacing.sm,
+        marginBottom: spacing.md,
+    },
+    typeButton: {
+        flex: 1,
+        padding: spacing.md,
+        borderRadius: radius.md,
+        alignItems: "center",
+        backgroundColor: colors.bgInput,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    typeButtonActiveBonus: {
+        backgroundColor: colors.primary + "20",
+        borderColor: colors.primary,
+    },
+    typeButtonActiveMalus: {
+        backgroundColor: colors.error + "20",
+        borderColor: colors.error,
+    },
+    typeButtonText: {
+        color: colors.textSecondary,
+        fontWeight: "600",
+    },
+    typeButtonTextActive: {
+        color: colors.textPrimary,
+    },
+    modalActions: {
+        flexDirection: "row",
+        gap: spacing.sm,
+        marginTop: spacing.sm,
+    },
+    modalCancel: {
+        flex: 1,
+        padding: spacing.md,
+        borderRadius: radius.md,
+        alignItems: "center",
+        backgroundColor: colors.bgInput,
+    },
+    modalCancelText: {
+        color: colors.textSecondary,
+        fontWeight: "600",
+    },
+    modalSubmit: {
+        flex: 1,
+        padding: spacing.md,
+        borderRadius: radius.md,
+        alignItems: "center",
+        backgroundColor: colors.primary,
+    },
+    modalSubmitText: {
+        color: "#fff",
         fontWeight: "600",
     },
 });
