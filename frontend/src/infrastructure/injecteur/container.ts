@@ -10,6 +10,8 @@ import { LogOutUseCase } from "@/src/application/usecases/user/logOut-usecase";
 
 import { GetProfileUseCase } from "@/src/application/usecases/user/getProfile-usecase";
 
+import { AddRuleUseCase } from "@/src/application/usecases/rules/addRules-usecase";
+
 import { GetActivitiesUseCase } from "@/src/application/usecases/activiy/getActivities-usecase";
 import { GetActivityUseCase } from "@/src/application/usecases/activiy/getActivity-usecase";
 import { RespondInviteUserUseCase } from "@/src/application/usecases/activiy/respondInvite-usecase";
@@ -26,12 +28,14 @@ import { CreateBillUseCase } from "@/src/application/usecases/bill/createBill-us
 import { GetBillUseCase } from "@/src/application/usecases/bill/getBill-usecase";
 import { CreateActivityUseCase } from "@/src/application/usecases/activiy/createActivity-usecase";
 import { InviteUserUseCase } from "@/src/application/usecases/activiy/inviteUser-usecase";
+import { ApiRuleRepositoryImp } from "../repositories/Rule-RepositoryImp";
 
 const authRepository = new ApiAuthRepositoryImp();
 const activityRepository = new ApiActivityRepositoryImp();
 const voteRepository = new ApiVoteRepositoryImp();
 const billRepository = new ApiBillRepositoryImp();
-const profilRepository = new ApiProfileRepositoryImp
+const profilRepository = new ApiProfileRepositoryImp();
+const ruleRepository = new ApiRuleRepositoryImp();
 
 export const container = {
     loginUser: new LoginUseCase(authRepository),
@@ -54,5 +58,7 @@ export const container = {
     createBill: new CreateBillUseCase(billRepository),
     getBill: new GetBillUseCase(billRepository),
 
-    getProfile: new GetProfileUseCase(profilRepository)
+    getProfile: new GetProfileUseCase(profilRepository),
+
+    addRule: new AddRuleUseCase(ruleRepository)
 };
