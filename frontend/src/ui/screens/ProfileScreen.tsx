@@ -1,267 +1,146 @@
 import React, { useEffect } from "react";
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
+    View, Text, TouchableOpacity, ActivityIndicator, ScrollView, StyleSheet,
 } from "react-native";
 import { useProfile } from "@/src/presentation/hooks/useProfile";
 import { colors } from "@/src/ui/styles/colors";
 import { spacing, radius } from "@/src/ui/styles/spacing";
+import { shadows } from "../styles/shadow";
 import { useAuth } from "@/src/presentation/context/AuthContext";
 
-interface Props {
-    username: string;
-    onBack: () => void;
-}
+interface Props { username: string; onBack: () => void; }
 
-const getReputationConfig = (score: number) => {
-    if (score >= 80) return { label: "Bon joueur 🏆", color: colors.primary, avatar: "😇" };
-    if (score >= 60) return { label: "Fiable 👍", color: colors.accent, avatar: "😊" };
-    if (score >= 40) return { label: "Neutre 😐", color: colors.warning, avatar: "😐" };
-    if (score >= 20) return { label: "Agitateur 👀", color: colors.error, avatar: "😈" };
-    return { label: "Chaotique 💀", color: "#ff0000", avatar: "💀" };
+const getReputation = (score: number) => {
+    if (score >= 80) return { label: "Bon joueur", color: colors.primary, emoji: "😇" };
+    if (score >= 60) return { label: "Fiable", color: colors.accent, emoji: "😊" };
+    if (score >= 40) return { label: "Neutre", color: colors.warning, emoji: "😐" };
+    if (score >= 20) return { label: "Agitateur", color: colors.error, emoji: "😈" };
+    return { label: "Chaotique", color: "#FF3B30", emoji: "💀" };
 };
 
 export const ProfileScreen = ({ username, onBack }: Props) => {
     const { logout } = useAuth();
     const { profile, loading, error, fetchProfile } = useProfile(username);
 
-    useEffect(() => {
-        fetchProfile();
-    }, [fetchProfile]);
+    useEffect(() => { fetchProfile(); }, [fetchProfile]);
 
     if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.primary} />
-            </View>
-        );
+        return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
     }
-
     if (error || !profile) {
         return (
-            <View style={styles.loadingContainer}>
+            <View style={styles.center}>
                 <Text style={styles.error}>{error || "Profil introuvable"}</Text>
-                <TouchableOpacity onPress={onBack}>
-                    <Text style={styles.backText}>← Retour</Text>
-                </TouchableOpacity>
+                <TouchableOpacity onPress={onBack}><Text style={styles.linkText}>Retour</Text></TouchableOpacity>
             </View>
         );
     }
 
-    const config = getReputationConfig(profile.reputationScore);
+    const rep = getReputation(profile.reputationScore);
 
     return (
-        <ScrollView style={styles.screen}>
+        <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={onBack}>
-                    <Text style={styles.backText}>← Retour</Text>
+                <TouchableOpacity onPress={onBack} hitSlop={16}>
+                    <Text style={styles.backArrow}>←</Text>
                 </TouchableOpacity>
             </View>
 
             <View style={styles.avatarSection}>
-                <View style={[styles.avatar, { borderColor: config.color, backgroundColor: config.color + "20" }]}>
-                    <Text style={styles.avatarEmoji}>{config.avatar}</Text>
+                <View style={[styles.avatarCircle, { borderColor: rep.color, backgroundColor: rep.color + "10" }]}>
+                    <Text style={styles.avatarEmoji}>{rep.emoji}</Text>
                 </View>
                 <Text style={styles.username}>{username}</Text>
             </View>
 
-            <View style={styles.reputationCard}>
-                <View style={styles.reputationHeader}>
-                    <Text style={styles.reputationTitle}>Réputation</Text>
-                    <Text style={[styles.reputationScore, { color: config.color }]}>
-                        {profile.reputationScore}/100
-                    </Text>
+            <View style={styles.repCard}>
+                <View style={styles.repHeader}>
+                    <Text style={styles.repTitle}>Réputation</Text>
+                    <Text style={[styles.repScore, { color: rep.color }]}>{profile.reputationScore}/100</Text>
                 </View>
-                <View style={styles.reputationBarBg}>
-                    <View
-                        style={[
-                            styles.reputationBarFill,
-                            {
-                                width: `${profile.reputationScore}%`,
-                                backgroundColor: config.color,
-                            },
-                        ]}
-                    />
+                <View style={styles.repBarBg}>
+                    <View style={[styles.repBarFill, { width: `${profile.reputationScore}%`, backgroundColor: rep.color }]} />
                 </View>
-                <Text style={[styles.reputationLabel, { color: config.color }]}>
-                    {config.label}
-                </Text>
+                <Text style={[styles.repLabel, { color: rep.color }]}>{rep.label}</Text>
             </View>
 
+            <Text style={styles.sectionLabel}>Statistiques</Text>
             <View style={styles.statsGrid}>
                 <View style={styles.statCard}>
-                    <Text style={styles.statValue}>{profile.totalActivities}</Text>
-                    <Text style={styles.statLabel}>Activités</Text>
+                    <Text style={styles.statVal}>{profile.totalActivities}</Text>
+                    <Text style={styles.statLbl}>Activités</Text>
                 </View>
                 <View style={styles.statCard}>
-                    <Text style={[
-                        styles.statValue,
-                        { color: profile.totalPoints >= 0 ? colors.primary : colors.error }
-                    ]}>
+                    <Text style={[styles.statVal, { color: profile.totalPoints >= 0 ? colors.primary : colors.error }]}>
                         {profile.totalPoints > 0 ? "+" : ""}{profile.totalPoints}
                     </Text>
-                    <Text style={styles.statLabel}>Points totaux</Text>
+                    <Text style={styles.statLbl}>Points</Text>
                 </View>
                 <View style={styles.statCard}>
-                    <Text style={[styles.statValue, { color: colors.primary }]}>
-                        {profile.bonusReceived}
-                    </Text>
-                    <Text style={styles.statLabel}> Bonus</Text>
+                    <Text style={[styles.statVal, { color: colors.primary }]}>{profile.bonusReceived}</Text>
+                    <Text style={styles.statLbl}>Bonus</Text>
                 </View>
                 <View style={styles.statCard}>
-                    <Text style={[styles.statValue, { color: colors.error }]}>
-                        {profile.malusReceived}
-                    </Text>
-                    <Text style={styles.statLabel}> Malus</Text>
+                    <Text style={[styles.statVal, { color: colors.error }]}>{profile.malusReceived}</Text>
+                    <Text style={styles.statLbl}>Malus</Text>
                 </View>
             </View>
 
-            <View style={{ height: 40 }} />
-            <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-                <Text style={styles.logoutButtonText}>Déconnexion</Text>
+            <TouchableOpacity style={styles.logoutBtn} onPress={logout} activeOpacity={0.7}>
+                <Text style={styles.logoutText}>Déconnexion</Text>
             </TouchableOpacity>
 
-            <View style={{ height: 40 }} />
+            <View style={{ height: 60 }} />
         </ScrollView>
-
     );
 };
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: colors.bgPrimary,
-        paddingHorizontal: spacing.lg,
-    },
-    loadingContainer: {
-        flex: 1,
-        backgroundColor: colors.bgPrimary,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    header: {
-        paddingTop: 60,
-        paddingBottom: spacing.md,
-    },
-    backText: {
-        color: colors.primary,
-        fontSize: 16,
-        fontWeight: "600",
-    },
-    avatarSection: {
-        alignItems: "center",
-        paddingVertical: spacing.xl,
-    },
-    avatar: {
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 3,
-        marginBottom: spacing.md,
-    },
+    screen: { flex: 1, backgroundColor: colors.bgPrimary, paddingHorizontal: spacing.lg },
+    center: { flex: 1, backgroundColor: colors.bgPrimary, justifyContent: "center", alignItems: "center" },
 
-    username: {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: colors.textPrimary,
+    header: { paddingTop: 60, paddingBottom: spacing.sm },
+    backArrow: { fontSize: 28, color: colors.textPrimary, fontWeight: "300" },
+
+    avatarSection: { alignItems: "center", paddingVertical: spacing.xl },
+    avatarCircle: {
+        width: 96, height: 96, borderRadius: 48,
+        justifyContent: "center", alignItems: "center",
+        borderWidth: 3, marginBottom: spacing.md, ...shadows.md,
     },
-    reputationCard: {
-        backgroundColor: colors.bgSecondary,
-        borderRadius: radius.lg,
-        padding: spacing.lg,
-        marginBottom: spacing.lg,
-        borderWidth: 1,
-        borderColor: colors.border,
+    avatarEmoji: { fontSize: 44 },
+    username: { fontSize: 28, fontWeight: "800", color: colors.textPrimary, letterSpacing: -0.5 },
+
+    repCard: {
+        backgroundColor: colors.white, borderRadius: radius.xl, padding: spacing.lg,
+        marginBottom: spacing.lg, ...shadows.md,
     },
-    reputationHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: spacing.sm,
+    repHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing.sm },
+    repTitle: { fontSize: 16, fontWeight: "700", color: colors.textPrimary },
+    repScore: { fontSize: 16, fontWeight: "700" },
+    repBarBg: { height: 8, backgroundColor: colors.bgInput, borderRadius: 4, overflow: "hidden", marginBottom: spacing.sm },
+    repBarFill: { height: 8, borderRadius: 4 },
+    repLabel: { fontSize: 14, fontWeight: "600", textAlign: "center" },
+
+    sectionLabel: {
+        fontSize: 12, fontWeight: "600", color: colors.textSecondary,
+        textTransform: "uppercase", letterSpacing: 0.5, marginBottom: spacing.sm, paddingLeft: spacing.xs,
     },
-    reputationTitle: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: colors.textPrimary,
-    },
-    reputationScore: {
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-    reputationBarBg: {
-        height: 12,
-        backgroundColor: colors.bgInput,
-        borderRadius: radius.full,
-        overflow: "hidden",
-        marginBottom: spacing.sm,
-    },
-    reputationBarFill: {
-        height: 12,
-        borderRadius: radius.full,
-    },
-    reputationLabel: {
-        fontSize: 14,
-        fontWeight: "600",
-        textAlign: "center",
-    },
-    statsGrid: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: spacing.sm,
-        marginBottom: spacing.lg,
-    },
+    statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginBottom: spacing.lg },
     statCard: {
-        flex: 1,
-        minWidth: "45%",
-        backgroundColor: colors.bgSecondary,
-        borderRadius: radius.lg,
-        padding: spacing.lg,
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: colors.border,
+        flex: 1, minWidth: "45%",
+        backgroundColor: colors.white, borderRadius: radius.xl,
+        padding: spacing.lg, alignItems: "center", ...shadows.md,
     },
-    statValue: {
-        fontSize: 28,
-        fontWeight: "bold",
-        color: colors.textPrimary,
-        marginBottom: 4,
-    },
-    statLabel: {
-        fontSize: 13,
-        color: colors.textSecondary,
-    },
-    error: {
-        color: colors.error,
-        fontSize: 14,
-        marginBottom: spacing.md,
-    },
-    logoutButton: {
-        backgroundColor: colors.bgSecondary,
-        padding: spacing.md,
-        borderRadius: radius.md,
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: colors.error + "40",
-        marginTop: spacing.lg,
-    },
-    logoutButtonText: {
-        color: colors.error,
-        fontSize: 15,
-        fontWeight: "600",
-    },
+    statVal: { fontSize: 30, fontWeight: "800", color: colors.textPrimary, marginBottom: 4 },
+    statLbl: { fontSize: 13, color: colors.textSecondary },
 
-    avatarEmoji: {
-        fontSize: 44,
+    logoutBtn: {
+        backgroundColor: colors.white, padding: spacing.md,
+        borderRadius: radius.md, alignItems: "center", ...shadows.sm,
     },
-    reputationBadge: {
-        fontSize: 14,
-        fontWeight: "600",
-        marginTop: 4,
-    },
+    logoutText: { color: colors.error, fontSize: 15, fontWeight: "600" },
+
+    error: { color: colors.error, fontSize: 14, marginBottom: spacing.md },
+    linkText: { color: colors.accent, fontSize: 15, fontWeight: "600" },
 });
