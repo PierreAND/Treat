@@ -1,4 +1,4 @@
-import React, { act, useState } from "react";
+import React, { useState } from "react";
 import {
     View,
     Text,
@@ -14,11 +14,12 @@ import { useActivities } from "@/src/presentation/hooks/useActivities";
 import { colors } from "@/src/ui/styles/colors";
 import { container } from "@/src/infrastructure/injecteur/container";
 import { spacing, radius } from "@/src/ui/styles/spacing";
+import { shadows } from "../styles/shadow";
 import { ActivitySummary } from "@/src/domain/entities/activity.model";
 import { ActivityDetailScreen } from "./ActivityDetailScreen";
 import { ProfileScreen } from "./ProfileScreen";
-import { VoteScreen } from "./VoteScreen"
-import { BillScreen } from "./BillScreen"
+import { VoteScreen } from "./VoteScreen";
+import { BillScreen } from "./BillScreen";
 import { PullToRefresh } from "../components/PullToRefresh";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -30,7 +31,7 @@ export const HomeScreen = () => {
     const [theme, setTheme] = useState("");
     const [creating, setCreating] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
-    const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null)
+    const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
     const [voteActivityId, setVoteActivityId] = useState<number | null>(null);
     const [billActivityId, setBillActivityId] = useState<number | null>(null);
     const [profileUsername, setProfileUsername] = useState<string | null>(null);
@@ -39,7 +40,6 @@ export const HomeScreen = () => {
     const invitations = activities.filter((a) => a.memberStatus === "invited");
     const myActivities = activities.filter((a) => a.memberStatus === "accepted" && a.status !== "finished");
     const archivedActivities = activities.filter((a) => a.status === "finished");
-
 
     const handleCreate = async () => {
         if (!name || !theme) {
@@ -72,9 +72,9 @@ export const HomeScreen = () => {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case "pending": return colors.accent;
+            case "pending": return colors.warning;
             case "active": return colors.primary;
-            case "voting": return colors.warning;
+            case "voting": return colors.accent;
             case "finished": return colors.textMuted;
             default: return colors.textSecondary;
         }
@@ -82,34 +82,39 @@ export const HomeScreen = () => {
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case "pending": return "⏳ En attente";
-            case "active": return "🟢 En cours";
-            case "voting": return "🗳️ Vote";
-            case "finished": return "✅ Terminée";
+            case "pending": return "En attente";
+            case "active": return "En cours";
+            case "voting": return "Vote";
+            case "finished": return "Terminée";
             default: return status;
         }
     };
 
     const renderInvitation = ({ item }: { item: ActivitySummary }) => (
         <View style={styles.inviteCard}>
-            <View style={styles.inviteGlow} />
-            <View style={styles.inviteHeader}>
-                <Text style={styles.inviteThemeTag}>{item.theme.toUpperCase()}</Text>
-                <Text style={styles.inviteFrom}>de {item.creator}</Text>
+            <View style={styles.inviteTop}>
+                <View style={styles.inviteAvatar}>
+                    <Text style={styles.inviteAvatarText}>{item.creator.charAt(0).toUpperCase()}</Text>
+                </View>
+                <View style={styles.inviteContent}>
+                    <Text style={styles.inviteName}>{item.name}</Text>
+                    <Text style={styles.inviteMeta}>{item.theme} · {item.creator}</Text>
+                </View>
             </View>
-            <Text style={styles.inviteName}>{item.name}</Text>
             <View style={styles.inviteActions}>
                 <TouchableOpacity
-                    style={styles.acceptButton}
+                    style={styles.acceptBtn}
                     onPress={() => handleRespond(item.id, true)}
+                    activeOpacity={0.8}
                 >
-                    <Text style={styles.acceptButtonText}>Accepter</Text>
+                    <Text style={styles.acceptBtnText}>Accepter</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={styles.declineButton}
+                    style={styles.declineBtn}
                     onPress={() => handleRespond(item.id, false)}
+                    activeOpacity={0.8}
                 >
-                    <Text style={styles.declineButtonText}>Refuser</Text>
+                    <Text style={styles.declineBtnText}>Refuser</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -117,31 +122,30 @@ export const HomeScreen = () => {
 
     const renderActivity = ({ item }: { item: ActivitySummary }) => (
         <TouchableOpacity
-            style={styles.activityCard}
+            style={styles.activityRow}
             onPress={() => setSelectedActivityId(item.id)}
+            activeOpacity={0.7}
         >
-            <View style={styles.activityHeader}>
-                <Text style={styles.activityThemeTag}>{item.theme.toUpperCase()}</Text>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + "20" }]}>
-                    <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                        {getStatusLabel(item.status)}
-                    </Text>
-                </View>
+            <View style={styles.activityAvatar}>
+                <Text style={styles.activityAvatarText}>{item.name.charAt(0).toUpperCase()}</Text>
             </View>
-            <Text style={styles.activityName}>{item.name}</Text>
-            <Text style={styles.activityCreator}>Créé par {item.creator}</Text>
-            <Text style={styles.activityDate}>
-                
-                
-                 {new Date(item.createdAt).toLocaleDateString("fr-FR")}
-            </Text>
+            <View style={styles.activityContent}>
+                <Text style={styles.activityName}>{item.name}</Text>
+                <Text style={styles.activityMeta}>{item.creator} · {new Date(item.createdAt).toLocaleDateString("fr-FR")}</Text>
+            </View>
+            <View style={[styles.statusPill, { backgroundColor: getStatusColor(item.status) + "14" }]}>
+                <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
+                <Text style={[styles.statusLabel, { color: getStatusColor(item.status) }]}>
+                    {getStatusLabel(item.status)}
+                </Text>
+            </View>
         </TouchableOpacity>
     );
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={styles.loadingText}>Chargement...</Text>
+                <ActivityIndicator size="large" color={colors.accent} />
             </View>
         );
     }
@@ -149,14 +153,8 @@ export const HomeScreen = () => {
         return (
             <VoteScreen
                 activityId={voteActivityId}
-                onBack={() => {
-                    setVoteActivityId(null);
-                    refresh();
-                }}
-                onGoToBill={(id) => {
-                    setVoteActivityId(null);
-                    setBillActivityId(id);
-                }}
+                onBack={() => { setVoteActivityId(null); refresh(); }}
+                onGoToBill={(id) => { setVoteActivityId(null); setBillActivityId(id); }}
             />
         );
     }
@@ -164,10 +162,7 @@ export const HomeScreen = () => {
         return (
             <BillScreen
                 activityId={billActivityId}
-                onBack={() => {
-                    setBillActivityId(null);
-                    refresh();
-                }}
+                onBack={() => { setBillActivityId(null); refresh(); }}
             />
         );
     }
@@ -175,117 +170,92 @@ export const HomeScreen = () => {
         return (
             <ActivityDetailScreen
                 activityId={selectedActivityId}
-                onBack={() => {
-                    setSelectedActivityId(null);
-                    refresh();
-                }}
-                onGoToVote={(id) => {
-                    setSelectedActivityId(null);
-                    setVoteActivityId(id);
-                }}
-                onGoToBill={(id) => {
-                    setSelectedActivityId(null);
-                    setBillActivityId(id);
-                }}
+                onBack={() => { setSelectedActivityId(null); refresh(); }}
+                onGoToVote={(id) => { setSelectedActivityId(null); setVoteActivityId(id); }}
+                onGoToBill={(id) => { setSelectedActivityId(null); setBillActivityId(id); }}
             />
         );
     }
     if (profileUsername) {
-        return (
-            <ProfileScreen
-                username={profileUsername}
-                onBack={() => setProfileUsername(null)}
-            />
-        );
+        return <ProfileScreen username={profileUsername} onBack={() => setProfileUsername(null)} />;
     }
+
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView style={styles.screen}
+            <ScrollView
+                style={styles.screen}
+                showsVerticalScrollIndicator={false}
                 refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
             >
-
-                <View style={styles.headerActions}>
+                <View style={styles.topBar}>
                     <TouchableOpacity
-                        style={styles.profileButton}
+                        style={styles.profileBubble}
                         onPress={() => setProfileUsername(user?.username || "")}
+                        activeOpacity={0.7}
                     >
-                        <Text style={styles.profileButtonText}>
-                            {user?.username.charAt(0).toUpperCase()}
-                        </Text>
+                        <Text style={styles.profileBubbleText}>{user?.username.charAt(0).toUpperCase()}</Text>
                     </TouchableOpacity>
                 </View>
 
+                <Text style={styles.hero}>Who{'\n'}Gonna{'\n'}Pay</Text>
+
                 {!showForm && (
-                    <TouchableOpacity style={styles.createButton} onPress={() => setShowForm(true)}>
-                        <Text style={styles.createButtonText}>+ Nouvelle activité</Text>
+                    <TouchableOpacity style={styles.createBtn} onPress={() => setShowForm(true)} activeOpacity={0.8}>
+                        <Text style={styles.createBtnText}>Nouvelle activité</Text>
                     </TouchableOpacity>
                 )}
-
 
                 {showForm && (
                     <View style={styles.formCard}>
                         <View style={styles.formHeader}>
-                            <Text style={styles.formTitle}>Créer une activité</Text>
-                            <TouchableOpacity onPress={() => setShowForm(false)}>
+                            <Text style={styles.formTitle}>Nouvelle activité</Text>
+                            <TouchableOpacity onPress={() => setShowForm(false)} hitSlop={16}>
                                 <Text style={styles.formClose}>✕</Text>
                             </TouchableOpacity>
                         </View>
 
                         {formError && <Text style={styles.formError}>{formError}</Text>}
 
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Nom de l'activité"
-                            placeholderTextColor={colors.textMuted}
-                            value={name}
-                            onChangeText={setName}
-                        />
+                        <View style={styles.formInputGroup}>
+                            <TextInput
+                                style={styles.formInput}
+                                placeholder="Nom de l'activité"
+                                placeholderTextColor={colors.textMuted}
+                                value={name}
+                                onChangeText={setName}
+                            />
+                        </View>
 
-                        <Text style={styles.themeLabel}>Thème</Text>
-                        <View style={styles.themeContainer}>
+                        <Text style={styles.formLabel}>Thème</Text>
+                        <View style={styles.themeRow}>
                             {themes.map((t) => (
                                 <TouchableOpacity
                                     key={t}
-                                    style={[
-                                        styles.themeChip,
-                                        theme === t && styles.themeChipActive,
-                                    ]}
+                                    style={[styles.themeChip, theme === t && styles.themeChipActive]}
                                     onPress={() => setTheme(t)}
+                                    activeOpacity={0.7}
                                 >
-                                    <Text
-                                        style={[
-                                            styles.themeChipText,
-                                            theme === t && styles.themeChipTextActive,
-                                        ]}
-                                    >
-                                        {t === "sport" && "⚽ "}
-                                        {t === "sortie" && "🎉 "}
-                                        {t === "weekend" && "🏖️ "}
+                                    <Text style={[styles.themeChipText, theme === t && styles.themeChipTextActive]}>
                                         {t.charAt(0).toUpperCase() + t.slice(1)}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <TouchableOpacity
-                            style={styles.submitButton}
-                            onPress={handleCreate}
-                            disabled={creating}
-                        >
+                        <TouchableOpacity style={styles.formSubmitBtn} onPress={handleCreate} disabled={creating} activeOpacity={0.8}>
                             {creating ? (
                                 <ActivityIndicator color={colors.white} />
                             ) : (
-                                <Text style={styles.submitButtonText}>Créer 🚀</Text>
+                                <Text style={styles.formSubmitText}>Créer</Text>
                             )}
                         </TouchableOpacity>
                     </View>
                 )}
 
+                
                 {invitations.length > 0 && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>
-                            📩 Invitations ({invitations.length})
-                        </Text>
+                        <Text style={styles.sectionTitle}>Invitations</Text>
                         <FlatList
                             data={invitations}
                             keyExtractor={(item) => item.id.toString()}
@@ -295,39 +265,42 @@ export const HomeScreen = () => {
                     </View>
                 )}
 
-
+              
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>🏆 Mes activités</Text>
+                    <Text style={styles.sectionTitle}>Mes activités</Text>
                     {myActivities.length === 0 ? (
-                        <View style={styles.emptyState}>
-                            <Text style={styles.emptyEmoji}>🥊</Text>
-                            <Text style={styles.emptyText}>Aucune activité pour le moment</Text>
-                            <Text style={styles.emptySubtext}>Crée ta première activité !</Text>
+                        <View style={styles.emptyCard}>
+                            <Text style={styles.emptyTitle}>Rien pour le moment</Text>
+                            <Text style={styles.emptySubtext}>Crée ta première activité</Text>
                         </View>
                     ) : (
-                        myActivities.map((item) => (
-                            <View key={item.id.toString()}>
-                                {renderActivity({ item })
-
-                                }
-                            </View>
-                        ))
-                    )}
-
-                    {archivedActivities.length > 0 && (
-                        <>
-                            <Text style={styles.sectionTitle}>🗄️ Activités terminées</Text>
-                            {archivedActivities.map((item) => (
+                        <View style={styles.listCard}>
+                            {myActivities.map((item, i) => (
                                 <View key={item.id.toString()}>
+                                    {i > 0 && <View style={styles.rowDivider} />}
                                     {renderActivity({ item })}
                                 </View>
                             ))}
-                        </>
+                        </View>
                     )}
                 </View>
 
-                {error && <Text style={styles.error}>{error}</Text>}
+                
+                {archivedActivities.length > 0 && (
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Terminées</Text>
+                        <View style={styles.listCard}>
+                            {archivedActivities.map((item, i) => (
+                                <View key={item.id.toString()}>
+                                    {i > 0 && <View style={styles.rowDivider} />}
+                                    {renderActivity({ item })}
+                                </View>
+                            ))}
+                        </View>
+                    </View>
+                )}
 
+                {error && <Text style={styles.error}>{error}</Text>}
                 <View style={{ height: 40 }} />
             </ScrollView>
         </SafeAreaView>
@@ -335,345 +308,210 @@ export const HomeScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: colors.bgPrimary,
-        paddingHorizontal: spacing.lg,
+    safeArea: { flex: 1, backgroundColor: colors.bgPrimary },
+    screen: { flex: 1, backgroundColor: colors.bgPrimary, paddingHorizontal: spacing.lg },
+    loadingContainer: { flex: 1, backgroundColor: colors.bgPrimary, justifyContent: "center", alignItems: "center" },
+
+    topBar: {
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        paddingTop: spacing.sm,
+        marginBottom: spacing.md,
     },
-    loadingContainer: {
-        flex: 1,
-        backgroundColor: colors.bgPrimary,
+    profileBubble: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: colors.white,
         justifyContent: "center",
         alignItems: "center",
+        ...shadows.md,
     },
-    loadingText: {
-        color: colors.textSecondary,
-        marginTop: spacing.md,
-        fontSize: 14,
-    },
-    safeArea: {
-        flex: 1,
-        backgroundColor: colors.bgPrimary,
-    },
-
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingTop: spacing.md,
-        paddingBottom: spacing.lg,
-    },
-    greeting: {
-        fontSize: 26,
-        fontWeight: "bold",
+    profileBubbleText: {
         color: colors.textPrimary,
-    },
-    subtitle: {
-        fontSize: 14,
-        color: colors.textSecondary,
-        marginTop: 4,
-    },
-    logoutButton: {
-        backgroundColor: colors.bgInput,
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
-        borderRadius: radius.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    logoutText: {
-        color: colors.error,
-        fontSize: 13,
-        fontWeight: "600",
+        fontWeight: "700",
+        fontSize: 18,
     },
 
-    createButton: {
-        backgroundColor: colors.primaryDark,
-        padding: spacing.md,
+    hero: {
+        fontSize: 52,
+        fontWeight: "900",
+        color: colors.textPrimary,
+        letterSpacing: -2,
+        lineHeight: 54,
+        marginBottom: spacing.xl,
+    },
+
+    createBtn: {
+        backgroundColor: colors.accent,
+        paddingVertical: spacing.md,
         borderRadius: radius.md,
         alignItems: "center",
-        marginBottom: spacing.lg,
-        borderWidth: 1,
-        borderColor: colors.primary,
+        marginBottom: spacing.xl,
+        ...shadows.md,
     },
-    createButtonText: {
+    createBtnText: {
         color: colors.white,
         fontSize: 16,
-        fontWeight: "bold",
+        fontWeight: "700",
     },
 
     formCard: {
-        backgroundColor: colors.bgSecondary,
-        borderRadius: radius.lg,
+        backgroundColor: colors.white,
+        borderRadius: radius.xl,
         padding: spacing.lg,
-        marginBottom: spacing.lg,
-        borderWidth: 1,
-        borderColor: colors.border,
+        marginBottom: spacing.xl,
+        ...shadows.lg,
     },
     formHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: spacing.md,
+        marginBottom: spacing.lg,
     },
-    formTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: colors.textPrimary,
-    },
-    formClose: {
-        fontSize: 20,
-        color: colors.textSecondary,
-        padding: spacing.xs,
-    },
-    formError: {
-        color: colors.error,
-        fontSize: 13,
-        marginBottom: spacing.md,
-    },
-    input: {
-        backgroundColor: colors.bgInput,
-        borderWidth: 1,
-        borderColor: colors.border,
+    formTitle: { fontSize: 20, fontWeight: "700", color: colors.textPrimary },
+    formClose: { fontSize: 18, color: colors.textMuted, padding: spacing.xs },
+    formError: { color: colors.error, fontSize: 13, marginBottom: spacing.md },
+    formInputGroup: {
+        backgroundColor: colors.bgPrimary,
         borderRadius: radius.md,
+        marginBottom: spacing.md,
+    },
+    formInput: {
         padding: spacing.md,
         fontSize: 16,
         color: colors.textPrimary,
-        marginBottom: spacing.md,
     },
-    themeLabel: {
-        color: colors.textSecondary,
-        fontSize: 13,
+    formLabel: {
+        fontSize: 12,
         fontWeight: "600",
+        color: colors.textSecondary,
+        textTransform: "uppercase",
+        letterSpacing: 0.5,
         marginBottom: spacing.sm,
     },
-    themeContainer: {
+    themeRow: {
         flexDirection: "row",
         gap: spacing.sm,
         marginBottom: spacing.lg,
     },
     themeChip: {
         flex: 1,
-        backgroundColor: colors.bgInput,
-        borderWidth: 1,
-        borderColor: colors.border,
+        backgroundColor: colors.bgPrimary,
         borderRadius: radius.md,
-        paddingVertical: spacing.sm + 2,
+        paddingVertical: spacing.sm + 4,
         alignItems: "center",
     },
     themeChipActive: {
-        backgroundColor: colors.accent + "20",
-        borderColor: colors.accent,
+        backgroundColor: colors.accent + "14",
     },
-    themeChipText: {
-        color: colors.textSecondary,
-        fontSize: 13,
-        fontWeight: "600",
-    },
-    themeChipTextActive: {
-        color: colors.accent,
-    },
-    submitButton: {
-        backgroundColor: colors.primaryDark,
-        padding: spacing.md,
+    themeChipText: { color: colors.textSecondary, fontSize: 14, fontWeight: "600" },
+    themeChipTextActive: { color: colors.accent },
+    formSubmitBtn: {
+        backgroundColor: colors.accent,
+        paddingVertical: spacing.md,
         borderRadius: radius.md,
         alignItems: "center",
-        borderWidth: 1,
-        borderColor: colors.primary,
     },
-    submitButtonText: {
-        color: colors.white,
-        fontSize: 16,
-        fontWeight: "bold",
-    },
+    formSubmitText: { color: colors.white, fontSize: 16, fontWeight: "700" },
 
-    section: {
-        marginBottom: spacing.lg,
-    },
+    section: { marginBottom: spacing.lg },
     sectionTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
+        fontSize: 20,
+        fontWeight: "800",
         color: colors.textPrimary,
         marginBottom: spacing.md,
+        letterSpacing: -0.3,
     },
 
     inviteCard: {
-        backgroundColor: colors.bgSecondary,
-        borderRadius: radius.lg,
+        backgroundColor: colors.white,
+        borderRadius: radius.xl,
         padding: spacing.lg,
-        marginBottom: spacing.md,
-        borderWidth: 1,
-        borderColor: colors.accent + "40",
-        overflow: "hidden",
-    },
-    inviteGlow: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 3,
-        backgroundColor: colors.accent,
-    },
-    inviteHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
         marginBottom: spacing.sm,
+        ...shadows.md,
     },
-    inviteThemeTag: {
-        fontSize: 11,
-        fontWeight: "bold",
-        color: colors.accent,
-        backgroundColor: colors.accent + "15",
-        paddingHorizontal: spacing.sm,
-        paddingVertical: 3,
-        borderRadius: radius.sm,
-        overflow: "hidden",
-    },
-    inviteFrom: {
-        fontSize: 12,
-        color: colors.textSecondary,
-    },
-    inviteName: {
-        fontSize: 17,
-        fontWeight: "bold",
-        color: colors.textPrimary,
-        marginBottom: spacing.md,
-    },
-    inviteActions: {
-        flexDirection: "row",
-        gap: spacing.sm,
-    },
-    acceptButton: {
-        flex: 1,
-        backgroundColor: colors.primaryDark,
-        paddingVertical: spacing.sm + 2,
-        borderRadius: radius.md,
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: colors.primary,
-    },
-    acceptButtonText: {
-        color: colors.white,
-        fontWeight: "bold",
-        fontSize: 14,
-    },
-    declineButton: {
-        flex: 1,
-        backgroundColor: colors.bgInput,
-        paddingVertical: spacing.sm + 2,
-        borderRadius: radius.md,
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    declineButtonText: {
-        color: colors.error,
-        fontWeight: "bold",
-        fontSize: 14,
-    },
-
-    activityCard: {
-        backgroundColor: colors.bgSecondary,
-        borderRadius: radius.lg,
-        padding: spacing.lg,
-        marginBottom: spacing.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    activityHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: spacing.sm,
-    },
-    activityThemeTag: {
-        fontSize: 11,
-        fontWeight: "bold",
-        color: colors.primary,
-        backgroundColor: colors.primary + "15",
-        paddingHorizontal: spacing.sm,
-        paddingVertical: 3,
-        borderRadius: radius.sm,
-        overflow: "hidden",
-    },
-    statusBadge: {
-        paddingHorizontal: spacing.sm,
-        paddingVertical: 3,
-        borderRadius: radius.sm,
-    },
-    statusText: {
-        fontSize: 11,
-        fontWeight: "bold",
-    },
-    activityName: {
-        fontSize: 17,
-        fontWeight: "bold",
-        color: colors.textPrimary,
-        marginBottom: 4,
-    },
-    activityCreator: {
-        fontSize: 12,
-        color: colors.textSecondary,
-    },
-
-    emptyState: {
-        alignItems: "center",
-        paddingVertical: spacing.xl,
-        backgroundColor: colors.bgSecondary,
-        borderRadius: radius.lg,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderStyle: "dashed",
-    },
-    emptyEmoji: {
-        fontSize: 40,
-        marginBottom: spacing.md,
-    },
-    emptyText: {
-        fontSize: 16,
-        color: colors.textPrimary,
-        fontWeight: "600",
-    },
-    emptySubtext: {
-        fontSize: 13,
-        color: colors.textSecondary,
-        marginTop: 4,
-    },
-
-
-    error: {
-        color: colors.error,
-        textAlign: "center",
-        marginTop: spacing.md,
-        fontSize: 14,
-    },
-    headerActions: {
-        flexDirection: "row",
-        justifyContent: "flex-end",
-        alignItems: "center",
-        paddingTop: spacing.md,
-        marginBottom: spacing.md,
-    },
-    profileButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: colors.accent + "30",
+    inviteTop: { flexDirection: "row", alignItems: "center", marginBottom: spacing.md },
+    inviteAvatar: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: colors.accent + "14",
         justifyContent: "center",
         alignItems: "center",
-        borderWidth: 2,
-        borderColor: colors.accent,
+        marginRight: spacing.md,
     },
-    profileButtonText: {
-        color: colors.accent,
-        fontWeight: "bold",
-        fontSize: 18,
+    inviteAvatarText: { color: colors.accent, fontWeight: "700", fontSize: 18 },
+    inviteContent: { flex: 1 },
+    inviteName: { fontSize: 16, fontWeight: "700", color: colors.textPrimary },
+    inviteMeta: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
+    inviteActions: { flexDirection: "row", gap: spacing.sm },
+    acceptBtn: {
+        flex: 1,
+        backgroundColor: colors.primary,
+        paddingVertical: spacing.sm + 4,
+        borderRadius: radius.md,
+        alignItems: "center",
     },
-    activityDate: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
-},
+    acceptBtnText: { color: colors.white, fontWeight: "700", fontSize: 14 },
+    declineBtn: {
+        flex: 1,
+        backgroundColor: colors.bgPrimary,
+        paddingVertical: spacing.sm + 4,
+        borderRadius: radius.md,
+        alignItems: "center",
+    },
+    declineBtnText: { color: colors.error, fontWeight: "700", fontSize: 14 },
 
+    listCard: {
+        backgroundColor: colors.white,
+        borderRadius: radius.xl,
+        overflow: "hidden",
+        ...shadows.md,
+    },
+    activityRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: spacing.md,
+    },
+    activityAvatar: {
+        width: 42,
+        height: 42,
+        borderRadius: 21,
+        backgroundColor: colors.bgPrimary,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: spacing.md,
+    },
+    activityAvatarText: { color: colors.textPrimary, fontWeight: "700", fontSize: 17 },
+    activityContent: { flex: 1 },
+    activityName: { fontSize: 15, fontWeight: "600", color: colors.textPrimary },
+    activityMeta: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+    statusPill: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: spacing.sm + 2,
+        paddingVertical: 4,
+        borderRadius: radius.full,
+        gap: 5,
+    },
+    statusDot: { width: 6, height: 6, borderRadius: 3 },
+    statusLabel: { fontSize: 11, fontWeight: "600" },
+    rowDivider: {
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: colors.border,
+        marginLeft: 42 + spacing.md * 2,
+    },
+
+    emptyCard: {
+        backgroundColor: colors.white,
+        borderRadius: radius.xl,
+        paddingVertical: spacing.xl,
+        alignItems: "center",
+        ...shadows.sm,
+    },
+    emptyTitle: { fontSize: 16, fontWeight: "600", color: colors.textPrimary },
+    emptySubtext: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
+
+    error: { color: colors.error, textAlign: "center", marginTop: spacing.md, fontSize: 14 },
 });
