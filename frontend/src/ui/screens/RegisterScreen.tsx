@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useAuth } from '@/src/presentation/context/AuthContext';
-import { commonStyles } from '../styles/common';
-import { typography } from '../styles/typo';
 import { colors } from '../styles/colors';
+import { spacing, radius } from '../styles/spacing';
+import { shadows } from '../styles/shadow';
 
 export const RegisterScreen = ({ onNavigateToLogin }: { onNavigateToLogin: () => void }) => {
     const [email, setEmail] = useState('');
@@ -14,57 +14,129 @@ export const RegisterScreen = ({ onNavigateToLogin }: { onNavigateToLogin: () =>
     const handleRegister = () => register({ email, username, password });
 
     return (
-        <View style={commonStyles.screen}>
-            <Text style={[typography.title, { textAlign: 'center', marginBottom: 8 }]}>
-                🟣 Inscription
-            </Text>
-            <Text style={[typography.caption, { textAlign: 'center', marginBottom: 32 }]}>
-                Rejoins le combat
-            </Text>
+        <View style={styles.screen}>
+            <View style={styles.content}>
+                <Text style={styles.hero}>Join{'\n'}the{'\n'}game</Text>
+                <Text style={styles.subtitle}>Crée ton compte</Text>
 
-            {error && <Text style={commonStyles.error}>{error}</Text>}
+                {error && <Text style={styles.error}>{error}</Text>}
 
-            <TextInput
-                style={commonStyles.input}
-                placeholder="Nom d'utilisateur"
-                placeholderTextColor={colors.textMuted}
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-            />
+                <View style={styles.inputCard}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Nom d'utilisateur"
+                        placeholderTextColor={colors.textMuted}
+                        value={username}
+                        onChangeText={setUsername}
+                        autoCapitalize="none"
+                    />
+                    <View style={styles.inputDivider} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Email"
+                        placeholderTextColor={colors.textMuted}
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                    <View style={styles.inputDivider} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Mot de passe"
+                        placeholderTextColor={colors.textMuted}
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                    />
+                </View>
 
-            <TextInput
-                style={commonStyles.input}
-                placeholder="Email"
-                placeholderTextColor={colors.textMuted}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-            />
+                <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading} activeOpacity={0.8}>
+                    {loading ? (
+                        <ActivityIndicator color={colors.white} />
+                    ) : (
+                        <Text style={styles.buttonText}>S&apos;inscrire</Text>
+                    )}
+                </TouchableOpacity>
 
-            <TextInput
-                style={commonStyles.input}
-                placeholder="Mot de passe"
-                placeholderTextColor={colors.textMuted}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
-
-            <TouchableOpacity style={commonStyles.buttonAccent} onPress={handleRegister} disabled={loading}>
-                {loading ? (
-                    <ActivityIndicator color={colors.white} />
-                ) : (
-                    <Text style={commonStyles.buttonAccentText}>S&apos;inscrire</Text>
-                )}
-            </TouchableOpacity>
-
-            <View style={commonStyles.divider} />
-
-            <TouchableOpacity onPress={onNavigateToLogin}>
-                <Text style={commonStyles.link}>Déjà un compte ? Se connecter</Text>
-            </TouchableOpacity>
+                <TouchableOpacity onPress={onNavigateToLogin} style={styles.linkContainer}>
+                    <Text style={styles.linkText}>Déjà un compte ?</Text>
+                    <Text style={styles.linkAction}> Se connecter</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
+
+const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+        backgroundColor: colors.bgPrimary,
+        justifyContent: 'center',
+        paddingHorizontal: spacing.lg,
+    },
+    content: {
+        paddingBottom: spacing.xxl,
+    },
+    hero: {
+        fontSize: 52,
+        fontWeight: '900',
+        color: colors.textPrimary,
+        letterSpacing: -2,
+        lineHeight: 54,
+        marginBottom: spacing.sm,
+    },
+    subtitle: {
+        fontSize: 15,
+        color: colors.textSecondary,
+        marginBottom: spacing.xl,
+    },
+    error: {
+        color: colors.error,
+        fontSize: 13,
+        marginBottom: spacing.md,
+        textAlign: 'center',
+    },
+    inputCard: {
+        backgroundColor: colors.white,
+        borderRadius: radius.lg,
+        marginBottom: spacing.lg,
+        ...shadows.md,
+    },
+    input: {
+        padding: spacing.md + 2,
+        fontSize: 16,
+        color: colors.textPrimary,
+    },
+    inputDivider: {
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: colors.border,
+        marginHorizontal: spacing.md,
+    },
+    button: {
+        backgroundColor: colors.primary,
+        paddingVertical: spacing.md + 2,
+        borderRadius: radius.md,
+        alignItems: 'center',
+        marginBottom: spacing.lg,
+        ...shadows.md,
+    },
+    buttonText: {
+        color: colors.white,
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    linkContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    linkText: {
+        color: colors.textSecondary,
+        fontSize: 14,
+    },
+    linkAction: {
+        color: colors.accent,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+});
