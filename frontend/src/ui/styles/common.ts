@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { colors } from './colors';
 import { spacing, radius } from './spacing';
+import { shadows } from './shadow';
 
 export const commonStyles = StyleSheet.create({
 
@@ -12,46 +13,48 @@ export const commonStyles = StyleSheet.create({
     },
 
     input: {
-        backgroundColor: colors.bgInput,
-        borderWidth: 1,
-        borderColor: colors.border,
+        backgroundColor: colors.white,
         borderRadius: radius.md,
         padding: spacing.md,
         marginBottom: spacing.md,
         fontSize: 16,
         color: colors.textPrimary,
+        ...shadows.sm,
     },
 
     buttonPrimary: {
-        backgroundColor: colors.primaryDark,
-        padding: spacing.md,
+        backgroundColor: colors.accent,
+        padding: spacing.md + 2,
         borderRadius: radius.md,
         alignItems: 'center',
         marginBottom: spacing.md,
+        ...shadows.md,
     },
     buttonPrimaryText: {
         color: colors.white,
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '700',
     },
 
     buttonAccent: {
-        backgroundColor: colors.accentDark,
-        padding: spacing.md,
+        backgroundColor: colors.primary,
+        padding: spacing.md + 2,
         borderRadius: radius.md,
         alignItems: 'center',
         marginBottom: spacing.md,
+        ...shadows.md,
     },
     buttonAccentText: {
         color: colors.white,
         fontSize: 16,
-        fontWeight: 'bold',
+        fontWeight: '700',
     },
 
     link: {
-        color: colors.primary,
+        color: colors.accent,
         textAlign: 'center',
         fontSize: 14,
+        fontWeight: '500',
     },
 
     error: {
@@ -65,5 +68,12 @@ export const commonStyles = StyleSheet.create({
         height: 1,
         backgroundColor: colors.border,
         marginVertical: spacing.lg,
+    },
+
+    card: {
+        backgroundColor: colors.white,
+        borderRadius: radius.lg,
+        padding: spacing.lg,
+        ...shadows.md,
     },
 });
