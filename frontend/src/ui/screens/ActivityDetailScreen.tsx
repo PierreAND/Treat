@@ -162,10 +162,17 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
                 </TouchableOpacity>
             )}
 
-            {isCreator && activity.status === "pending" && (
+            {isCreator && activity.status === "pending" && acceptedMembers.length >= 2 && (
                 <TouchableOpacity style={styles.actionBtn} onPress={handleStart} activeOpacity={0.8}>
                     <Text style={styles.actionBtnText}>Démarrer</Text>
                 </TouchableOpacity>
+            )}
+            {isCreator && activity.status === "pending" && acceptedMembers.length < 2 && (
+                
+                    <Text style={styles.emptyText}>
+                        Invite au moins un ami avant de démarrer
+                    </Text>
+                
             )}
             {isCreator && activity.status === "active" && (
                 <TouchableOpacity style={[styles.actionBtn, styles.actionBtnStop]} onPress={handleStop} activeOpacity={0.8}>
@@ -371,7 +378,6 @@ const styles = StyleSheet.create({
     header: { paddingTop: 60, paddingBottom: spacing.sm },
     backArrow: { fontSize: 28, color: colors.textPrimary, fontWeight: "300" },
 
-    // Hero
     heroSection: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -551,7 +557,7 @@ const styles = StyleSheet.create({
         borderRadius: radius.sm,
     },
 
-    
+
     inviteCard: {
         backgroundColor: colors.white,
         borderRadius: radius.xl,
