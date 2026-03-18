@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { User, LoginPayload, RegisterPayload } from "@/src/domain/entities/user.model";
 import { container } from "@/src/infrastructure/injecteur/container";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isTokenExpired } from "@/src/infrastructure/auth/tokenUtils";
+import { setOnUnauthorized } from "@/src/infrastructure/auth/ApiFetch-Repository";
 
 interface AuthContextType {
     user: User | null;
@@ -20,17 +22,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const logout = useCallback(async () => {
+        try {
+            await container.logoutUser.execute();
+        } catch {
+            
+        } finally {
+            await AsyncStorage.multiRemove(["token", "user"]);
+            setUser(null);
+            setError(null);
+            setLoading(false);
+        }
+    }, []);
+
+  
+    useEffect(() => {
+        setOnUnauthorized(logout);
+    }, [logout]);
+
+
     useEffect(() => {
         const checkAuth = async () => {
             try {
                 const token = await AsyncStorage.getItem("token");
                 const userData = await AsyncStorage.getItem("user");
-                if (token && userData) {
+
+                if (token && userData && !isTokenExpired(token)) {
                     setUser(JSON.parse(userData));
+                } else {
+                    await AsyncStorage.multiRemove(["token", "user"]);
+                    setUser(null);
                 }
             } catch (e) {
-                await AsyncStorage.removeItem("token");
-                await AsyncStorage.removeItem("user");
+                await AsyncStorage.multiRemove(["token", "user"]);
+                setUser(null);
             } finally {
                 setLoading(false);
             }
@@ -38,25 +63,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         checkAuth();
     }, []);
 
-  const login = async (credentials: LoginPayload) => {
-    setLoading(true);
-    setError(null);
-    try {
-        const result = await container.loginUser.execute(credentials);
-        const storedToken = await AsyncStorage.getItem("token");
-    
-        setUser(result.user);
-    } catch (e: any) {
-        setError(e.message);
-    } finally {
-        setLoading(false);
-    }
-};
-    const register = async (credentials: RegisterPayload) => {
+    const login = async (credentials: LoginPayload) => {
         setLoading(true);
         setError(null);
         try {
-            const result = await container.registerUser.execute(credentials);
+            const result = await container.loginUser.execute(credentials);
             setUser(result.user);
         } catch (e: any) {
             setError(e.message);
@@ -65,12 +76,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
-    const logout = async () => {
+    const register = async (credentials: RegisterPayload) => {
         setLoading(true);
         setError(null);
         try {
-            await container.logoutUser.execute();
-            setUser(null);
+            const result = await container.registerUser.execute(credentials);
+            setUser(result.user);
         } catch (e: any) {
             setError(e.message);
         } finally {
