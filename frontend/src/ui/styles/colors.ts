@@ -24,4 +24,7 @@ export const colors = {
 
     white: '#FFFFFF',
     black: '#000000',
+
+    alert: '#FFF8E1',
+    shadowAlert: '#F59E0B'
 };
