@@ -19,6 +19,7 @@ import { PullToRefresh } from "../components/PullToRefresh";
 import { useVotes } from "@/src/presentation/hooks/useVote";
 import { useRule } from "@/src/presentation/hooks/useRules";
 import { ActivityProps } from "@/src/presentation/interface/ActivityScreenType";
+import { typography } from "../styles/typo";
 
 export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBill }: ActivityProps) => {
     const { activity, loading, error, invite, start, stop, refresh, refreshing, handleRefresh } = useActivity(activityId);
@@ -168,11 +169,13 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
                 </TouchableOpacity>
             )}
             {isCreator && activity.status === "pending" && acceptedMembers.length < 2 && (
-                
-                    <Text style={styles.emptyText}>
+                <View style={styles.alertBanner}>
+                    <Text style={styles.alertIcon}>⚠️</Text>
+                    <Text style={styles.alertText}>
                         Invite au moins un ami avant de démarrer
                     </Text>
-                
+                </View>
+
             )}
             {isCreator && activity.status === "active" && (
                 <TouchableOpacity style={[styles.actionBtn, styles.actionBtnStop]} onPress={handleStop} activeOpacity={0.8}>
@@ -660,4 +663,26 @@ const styles = StyleSheet.create({
         backgroundColor: colors.accent,
     },
     modalSubmitText: { color: colors.white, fontWeight: "700" },
+    alertBanner: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: colors.alert,
+        borderLeftWidth: spacing.xs,
+        borderLeftColor: colors.shadowAlert,
+        borderRadius: spacing.sm,
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        marginBottom: 20,     
+        gap: 10,
+    },
+    alertIcon: {
+        fontSize: typography.body.fontSize,
+    },
+    alertText: {
+        flex: 1,
+        color: "#92400E",
+        fontSize: 13,
+        fontWeight: "500",
+        lineHeight: 18,
+    },
 });
