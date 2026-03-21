@@ -8,6 +8,8 @@ use App\Entity\Rule;
 use App\Entity\User;
 use App\Repository\ActivityMemberRepository;
 use App\Repository\RuleRepository;
+use App\Repository\BillShareRepository;
+use App\Repository\VoteRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -255,4 +257,41 @@ class ActivityController extends AbstractController
             ],
         };
     }
+
+
+#[Route('/{id}/members/{memberId}', name: 'activity_remove_member', methods: ['DELETE'])]
+public function removeMember(
+    Activity $activity,
+    int $memberId,
+    EntityManagerInterface $em,
+    VoteRepository $voteRepository,
+    BillShareRepository $billShareRepository
+): JsonResponse {
+    if ($activity->getCreator() !== $this->getUser()) {
+        return $this->json(['message' => 'Seul le créateur peut retirer un membre'], 403);
+    }
+
+    $member = $this->activityMemberRepository->findOneBy([
+        'activity' => $activity,
+        'user' => $memberId,
+    ]);
+
+    if (!$member) {
+        return $this->json(['message' => 'Membre introuvable'], 404);
+    }
+
+    if ($member->getUser() === $activity->getCreator()) {
+        return $this->json(['message' => 'Le créateur ne peut pas être retiré'], 400);
+    }
+
+    $user = $member->getUser();
+
+    $voteRepository->deleteByUserAndActivity($user, $activity);
+    $billShareRepository->deleteByUserAndActivity($user, $activity);
+
+    $em->remove($member);
+    $em->flush();
+
+    return $this->json(['message' => 'Membre retiré']);
+}
 }
