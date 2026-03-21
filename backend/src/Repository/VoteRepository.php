@@ -33,4 +33,15 @@ class VoteRepository extends ServiceEntityRepository
     {
         return $this->findBy(['target' => $user]);
     }
+    public function deleteByUserAndActivity(User $user, Activity $activity): void
+{
+    $this->createQueryBuilder('v')
+        ->delete()
+        ->where('v.activity = :activity')
+        ->andWhere('v.voter = :user OR v.target = :user')
+        ->setParameter('activity', $activity)
+        ->setParameter('user', $user)
+        ->getQuery()
+        ->execute();
+}
 }
