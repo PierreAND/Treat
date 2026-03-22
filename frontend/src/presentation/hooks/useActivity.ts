@@ -66,7 +66,7 @@ export const useActivity = (id: number) => {
         }
     };
 
-        const handleRefresh = async () => {
+    const handleRefresh = async () => {
         setRefreshing(true);
         setError(null);
         try {
@@ -78,5 +78,16 @@ export const useActivity = (id: number) => {
             setRefreshing(false);
         }
     };
-    return { activity, loading, refreshing, error, refresh: fetchActivity, invite, respond, start, stop, handleRefresh };
+
+    const removeMember = async (memberId: number) => {
+        setError(null);
+        try {
+            await container.deleteMember.execute(id, memberId);
+            await fetchActivity();
+        } catch (e: any) {
+            setError(e.message);
+        }
+    };
+
+    return { activity, loading, refreshing, error, refresh: fetchActivity, invite, respond, start, stop, handleRefresh , removeMember};
 };
