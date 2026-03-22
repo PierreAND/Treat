@@ -8,4 +8,5 @@ export interface ActivityRepository {
     respondInvite(activityId: number, accept: boolean): Promise<void>;
     startActivity(id: number): Promise<void>;
     stopActivity(id: number): Promise<void>;
+    deleteMember(activityId: number ,memberId: number): Promise<void>;
 }
