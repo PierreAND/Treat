@@ -17,6 +17,7 @@ import { GetActivityUseCase } from "@/src/application/usecases/activiy/getActivi
 import { RespondInviteUserUseCase } from "@/src/application/usecases/activiy/respondInvite-usecase";
 import { StartActivityUseCase } from "@/src/application/usecases/activiy/startActitivy-usecase";
 import { StopActivityUseCase } from "@/src/application/usecases/activiy/StopActivity-usecase";
+import { DeleteMemberUseCase } from "@/src/application/usecases/activiy/deleteMember-usecase";
 
 import { SubmitVotesUseCase } from "@/src/application/usecases/vote/submitVote-usecase";
 import { GetVoteResultsUseCase } from "@/src/application/usecases/vote/getResult-usecase";
@@ -49,6 +50,7 @@ export const container = {
     respondInvite: new RespondInviteUserUseCase(activityRepository),
     startActivity: new StartActivityUseCase(activityRepository),
     stopActivity: new StopActivityUseCase(activityRepository),
+    deleteMember: new DeleteMemberUseCase(activityRepository),
 
     submitVotes: new SubmitVotesUseCase(voteRepository),
     getVoteResults: new GetVoteResultsUseCase(voteRepository),
