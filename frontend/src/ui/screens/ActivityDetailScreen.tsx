@@ -8,6 +8,8 @@ import {
     ScrollView,
     StyleSheet,
     Modal,
+    Alert,
+    Pressable,
 } from "react-native";
 import { useActivity } from "@/src/presentation/hooks/useActivity";
 import { useAuth } from "@/src/presentation/context/AuthContext";
@@ -22,7 +24,7 @@ import { ActivityProps } from "@/src/presentation/interface/ActivityScreenType";
 import { typography } from "../styles/typo";
 
 export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBill }: ActivityProps) => {
-    const { activity, loading, error, invite, start, stop, refresh, refreshing, handleRefresh } = useActivity(activityId);
+    const { activity, loading, error, invite, start, stop, refresh, refreshing, handleRefresh, removeMember } = useActivity(activityId);
     const { user } = useAuth();
     const { allVoted, votedCount, totalCount, checkVoteCount } = useVotes(activityId);
     const [username, setUsername] = useState("");
@@ -88,14 +90,21 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
         }
     };
 
-    const getMemberStatusColor = (status: string) => {
-        switch (status) {
-            case "accepted": return colors.primary;
-            case "invited": return colors.accent;
-            case "declined": return colors.error;
-            default: return colors.textSecondary;
-        }
+    const handleRemoveMember = (memberId: number, username: string) => {
+        Alert.alert(
+            "Retirer le membre",
+            `Voulez-vous vraiment retirer ${username} ?`,
+            [
+                { text: "Annuler", style: "cancel" },
+                {
+                    text: "Retirer",
+                    style: "destructive",
+                    onPress: () => removeMember(memberId),
+                },
+            ]
+        );
     };
+
 
     if (loading || !activity) {
         return (
@@ -209,9 +218,18 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
                                         </View>
                                     </View>
                                 </View>
-                                <View style={[styles.memberToggle, { backgroundColor: colors.primary }]}>
-                                    <View style={styles.memberToggleKnob} />
-                                </View>
+                                {isCreator && member.username !== user?.username ? (
+                                    <Pressable
+                                        onPress={() => handleRemoveMember(member.id, member.username)}
+                                        style={[styles.memberToggle, { backgroundColor: colors.primary }]}
+                                    >
+                                        <View style={styles.memberToggleKnob} />
+                                    </Pressable>
+                                ) : (
+                                    <View style={[styles.memberToggle, { backgroundColor: colors.primary }]}>
+                                        <View style={styles.memberToggleKnob} />
+                                    </View>
+                                )}
                             </View>
                         </View>
                     ))}
@@ -672,7 +690,7 @@ const styles = StyleSheet.create({
         borderRadius: spacing.sm,
         paddingVertical: 10,
         paddingHorizontal: 14,
-        marginBottom: 20,     
+        marginBottom: 20,
         gap: 10,
     },
     alertIcon: {
