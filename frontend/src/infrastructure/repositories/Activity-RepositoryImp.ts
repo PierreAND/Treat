@@ -116,4 +116,15 @@ export class ApiActivityRepositoryImp implements ActivityRepository {
             throw new Error(error.message || "Échec de l'arrêt");
         }
     }
+    
+    async deleteMember(activityId: number, memberId: number): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${activityId}/members/${memberId}`, {
+            method: "DELETE",
+            headers: await this.authHeaders()
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message ||"Impossible d'enlever l'utilisateur")
+        }
+    }
 }
