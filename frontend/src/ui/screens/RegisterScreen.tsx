@@ -16,7 +16,7 @@ export const RegisterScreen = ({ onNavigateToLogin }: { onNavigateToLogin: () =>
     return (
         <View style={styles.screen}>
             <View style={styles.content}>
-                <Text style={styles.hero}>Join{'\n'}the{'\n'}game</Text>
+                <Text style={styles.hero}>Join{'\n'}The{'\n'}Game</Text>
                 <Text style={styles.subtitle}>Crée ton compte</Text>
 
                 {error && <Text style={styles.error}>{error}</Text>}

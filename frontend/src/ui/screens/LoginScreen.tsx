@@ -15,7 +15,7 @@ export const LoginScreen = ({ onNavigateToRegister }: { onNavigateToRegister: ()
     return (
         <View style={styles.screen}>
             <View style={styles.content}>
-                <Text style={styles.hero}>Who{'\n'}gonna{'\n'}pay</Text>
+                <Text style={styles.hero}>Who{'\n'}Gonna{'\n'}Pay</Text>
                 <Text style={styles.subtitle}>Connecte-toi pour continuer</Text>
 
                 {error && <Text style={styles.error}>{error}</Text>}
