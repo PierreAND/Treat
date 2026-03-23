@@ -136,15 +136,7 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
                     <Text style={styles.heroTitle}>{activity.name}</Text>
                     <Text style={styles.heroMeta}>{activity.theme} · {activity.creator}</Text>
                 </View>
-                <View style={styles.heroBubbles}>
-                    {acceptedMembers.slice(0, 3).map((m, i) => (
-                        <View key={m.id} style={styles.percentBubble}>
-                            <Text style={styles.percentText}>
-                                {Math.round(100 / acceptedMembers.length)}%
-                            </Text>
-                        </View>
-                    ))}
-                </View>
+
             </View>
 
             {(activity.status === "voting" || activity.status === "finished") && (
