@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export class ApiAuthRepositoryImp implements AuthRepository {
     private readonly registerUrl = `${environment.apiUrl}/register`;
     private readonly loginUrl = `${environment.apiUrl}/login`
+    private readonly baseUrl = `${environment.apiUrl}/password`
 
     private async postRequest<T>(url: string, body: object): Promise<T> {
         const response = await fetch(url, {
@@ -37,4 +38,13 @@ export class ApiAuthRepositoryImp implements AuthRepository {
         await AsyncStorage.removeItem('token');
         await AsyncStorage.removeItem('user');
     }
+
+    async forgotPassword(email: string): Promise<void> {
+        await this.postRequest<void>(`${this.baseUrl}/forgot`, { email })
+    }
+
+    async resetPassword(token: string, password: string): Promise<void> {
+        await this.postRequest<void>(`${this.baseUrl}/reset`, { token, password })
+    }
+
 }
