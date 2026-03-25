@@ -7,6 +7,8 @@ import { ApiProfileRepositoryImp } from "../repositories/Profile-RepositoryImp";
 import { LoginUseCase } from "@/src/application/usecases/user/loginUser-usecase";
 import { RegisterUseCase } from "@/src/application/usecases/user/registerUser-usecase";
 import { LogOutUseCase } from "@/src/application/usecases/user/logOut-usecase";
+import { ForgotPasswordUseCase } from "@/src/application/usecases/user/forgotPassword-usecase";
+import { ResetPasswordUseCase } from "@/src/application/usecases/user/resetPasswrod-usecase";
 
 import { GetProfileUseCase } from "@/src/application/usecases/user/getProfile-usecase";
 
@@ -42,6 +44,8 @@ export const container = {
     loginUser: new LoginUseCase(authRepository),
     registerUser: new RegisterUseCase(authRepository),
     logoutUser: new LogOutUseCase(authRepository),
+    forgotPassword: new ForgotPasswordUseCase(authRepository),
+    resetPassword: new ResetPasswordUseCase(authRepository),
 
     createActivity: new CreateActivityUseCase(activityRepository),
     getActivities: new GetActivitiesUseCase(activityRepository),
