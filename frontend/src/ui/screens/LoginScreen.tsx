@@ -5,7 +5,7 @@ import { colors } from '../styles/colors';
 import { spacing, radius } from '../styles/spacing';
 import { shadows } from '../styles/shadow';
 
-export const LoginScreen = ({ onNavigateToRegister }: { onNavigateToRegister: () => void }) => {
+export const LoginScreen = ({ onNavigateToRegister, onNavigateToForgotPassword }: { onNavigateToRegister: () => void, onNavigateToForgotPassword: () => void }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { login, loading, error } = useAuth();
@@ -53,11 +53,14 @@ export const LoginScreen = ({ onNavigateToRegister }: { onNavigateToRegister: ()
                     <Text style={styles.linkText}>Pas encore de compte ?</Text>
                     <Text style={styles.linkAction}> S&apos;inscrire</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity onPress={onNavigateToForgotPassword} style={styles.forgotContainer}>
+                    <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
 };
-
 const styles = StyleSheet.create({
     screen: {
         flex: 1,
@@ -128,5 +131,13 @@ const styles = StyleSheet.create({
         color: colors.accent,
         fontSize: 14,
         fontWeight: '600',
+    },
+    forgotContainer: {
+        alignItems: 'center',
+        marginTop: spacing.sm,
+    },
+    forgotText: {
+        color: colors.textSecondary,
+        fontSize: 13,
     },
 });
