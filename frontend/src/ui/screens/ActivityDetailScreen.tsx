@@ -71,7 +71,9 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
             setInviteSuccess(`${username} a été invité !`);
             setUsername("");
         } catch (e: any) {
-            setInviteError(e.message);
+
+            setInviteError(e.message)
+
         } finally {
             setInviteLoading(false);
         }
@@ -290,7 +292,9 @@ export const ActivityDetailScreen = ({ activityId, onBack, onGoToVote, onGoToBil
                                 {i > 0 && <View style={styles.memberDivider} />}
                                 <View style={styles.ruleRow}>
                                     <View style={styles.ruleContent}>
-                                        <Text style={styles.ruleName}>{rule.name}</Text>
+                                        <Text style={styles.ruleName}>
+                                            {rule.name.charAt(0).toUpperCase() + rule.name.slice(1)}
+                                        </Text>
                                         {rule.isDefault && <Text style={styles.ruleDefault}>par défaut</Text>}
                                     </View>
                                     <View style={[styles.ruleBadge, {

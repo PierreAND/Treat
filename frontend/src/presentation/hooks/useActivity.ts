@@ -33,6 +33,7 @@ export const useActivity = (id: number) => {
             await fetchActivity();
         } catch (e: any) {
             setError(e.message);
+            throw e;
         }
     };
 

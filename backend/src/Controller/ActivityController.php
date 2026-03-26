@@ -10,6 +10,7 @@ use App\Repository\ActivityMemberRepository;
 use App\Repository\RuleRepository;
 use App\Repository\BillShareRepository;
 use App\Repository\VoteRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +22,7 @@ class ActivityController extends AbstractController
 {
     public function __construct(
         private ActivityMemberRepository $activityMemberRepository,
+        private NotificationService $notificationService,
     ) {}
 
     #[Route('', name: 'activity_list', methods: ['GET'])]
@@ -147,6 +149,12 @@ class ActivityController extends AbstractController
         $em->persist($member);
         $em->flush();
 
+        $this->notificationService->send(
+            $user,
+            'Nouvelle invitation',
+            $activity->getCreator()->getUsername() . ' t\'a invité à ' . $activity->getName(),
+            ['activityId' => $activity->getId(), 'type' => 'invite']
+        );
         return $this->json(['message' => 'Invitation envoyée'], 201);
     }
 
@@ -198,6 +206,17 @@ class ActivityController extends AbstractController
 
         $activity->setStatus('voting');
         $em->flush();
+
+        foreach ($activity->getMembers() as $member) {
+            if ($member->getStatus() === 'accepted') {
+                $this->notificationService->send(
+                    $member->getUser(),
+                    'Phase de vote',
+                    'L\'activité "' . $activity->getName() . '" est en phase de vote',
+                    ['activityId' => $activity->getId(), 'type' => 'voting']
+                );
+            }
+        }
 
         return $this->json(['message' => 'Phase de vote ouverte', 'status' => 'voting']);
     }
@@ -259,39 +278,40 @@ class ActivityController extends AbstractController
     }
 
 
-#[Route('/{id}/members/{memberId}', name: 'activity_remove_member', methods: ['DELETE'])]
-public function removeMember(
-    Activity $activity,
-    int $memberId,
-    EntityManagerInterface $em,
-    VoteRepository $voteRepository,
-    BillShareRepository $billShareRepository
-): JsonResponse {
-    if ($activity->getCreator() !== $this->getUser()) {
-        return $this->json(['message' => 'Seul le créateur peut retirer un membre'], 403);
+    #[Route('/{id}/members/{memberId}', name: 'activity_remove_member', methods: ['DELETE'])]
+    public function removeMember(
+        Activity $activity,
+        int $memberId,
+        EntityManagerInterface $em,
+        VoteRepository $voteRepository,
+        BillShareRepository $billShareRepository
+    ): JsonResponse {
+        if ($activity->getCreator() !== $this->getUser()) {
+            return $this->json(['message' => 'Seul le créateur peut retirer un membre'], 403);
+        }
+
+        $member = $this->activityMemberRepository->findOneBy([
+            'activity' => $activity,
+            'user' => $memberId,
+        ]);
+
+        if (!$member) {
+            return $this->json(['message' => 'Membre introuvable'], 404);
+        }
+
+        if ($member->getUser() === $activity->getCreator()) {
+            return $this->json(['message' => 'Le créateur ne peut pas être retiré'], 400);
+        }
+
+        $user = $member->getUser();
+
+        $voteRepository->deleteByUserAndActivity($user, $activity);
+        $billShareRepository->deleteByUserAndActivity($user, $activity);
+
+        $em->remove($member);
+        $em->flush();
+
+        return $this->json(['message' => 'Membre retiré']);
     }
-
-    $member = $this->activityMemberRepository->findOneBy([
-        'activity' => $activity,
-        'user' => $memberId,
-    ]);
-
-    if (!$member) {
-        return $this->json(['message' => 'Membre introuvable'], 404);
-    }
-
-    if ($member->getUser() === $activity->getCreator()) {
-        return $this->json(['message' => 'Le créateur ne peut pas être retiré'], 400);
-    }
-
-    $user = $member->getUser();
-
-    $voteRepository->deleteByUserAndActivity($user, $activity);
-    $billShareRepository->deleteByUserAndActivity($user, $activity);
-
-    $em->remove($member);
-    $em->flush();
-
-    return $this->json(['message' => 'Membre retiré']);
-}
+   
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controller;
 
 use App\Entity\Activity;
@@ -7,6 +8,7 @@ use App\Entity\BillShare;
 use App\Repository\ActivityMemberRepository;
 use App\Repository\BillRepository;
 use App\Repository\VoteRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +22,7 @@ class BillController extends AbstractController
         private BillRepository $billRepository,
         private VoteRepository $voteRepository,
         private ActivityMemberRepository $activityMemberRepository,
+        private NotificationService $notificationService,
     ) {}
 
     #[Route('', name: 'bill_create', methods: ['POST'])]
@@ -110,6 +113,16 @@ class BillController extends AbstractController
 
         $activity->setStatus('finished');
         $em->flush();
+
+        foreach ($members as $member) {
+            $this->notificationService->send(
+                $member->getUser(),
+                'Note disponible',
+                'La note de "' . $activity->getName() . '" est prête !',
+                ['activityId' => $activity->getId(), 'type' => 'bill']
+            );
+        }
+
 
         return $this->json([
             'totalAmount' => $data['totalAmount'],
