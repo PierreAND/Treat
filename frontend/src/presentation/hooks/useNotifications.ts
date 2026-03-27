@@ -3,6 +3,7 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import { useRouter } from "expo-router";
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -16,11 +17,13 @@ Notifications.setNotificationHandler({
 
 export const useNotifications = () => {
     const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+    const router = useRouter();
     const notificationListener = useRef<Notifications.EventSubscription | null>(null);
     const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
+
     const registerForPushNotifications = async () => {
-        
+
         if (!Device.isDevice) {
             console.warn("Les notifications ne marchent pas sur simulateur");
             return null;
@@ -52,16 +55,23 @@ export const useNotifications = () => {
         console.log(token)
         return token;
     };
-
     useEffect(() => {
         registerForPushNotifications().then(setExpoPushToken);
+
+
+        const lastResponse = Notifications.getLastNotificationResponse();
+        if (lastResponse) {
+            const data = lastResponse.notification.request.content.data;
+            if (data?.activityId) router.push(`/activity/${data.activityId}`);
+        }
 
         notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
             console.log("Notification reçue:", notification);
         });
 
         responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-            console.log("Notification cliquée:", response);
+            const data = response.notification.request.content.data;
+            if (data?.activityId) router.push(`/activity/${data.activityId}`);
         });
 
         return () => {
