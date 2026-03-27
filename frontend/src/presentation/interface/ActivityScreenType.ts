@@ -3,5 +3,4 @@ export interface ActivityProps {
     onBack: () => void;
     onGoToVote: (activityId: number) => void;
     onGoToBill: (activityId: number) => void;
-
 }
