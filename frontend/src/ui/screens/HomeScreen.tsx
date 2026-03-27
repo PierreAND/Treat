@@ -16,14 +16,11 @@ import { container } from "@/src/infrastructure/injecteur/container";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { shadows } from "../styles/shadow";
 import { ActivitySummary } from "@/src/domain/entities/activity.model";
-import { ActivityDetailScreen } from "./ActivityDetailScreen";
-import { ProfileScreen } from "./ProfileScreen";
-import { VoteScreen } from "./VoteScreen";
-import { BillScreen } from "./BillScreen";
 import { PullToRefresh } from "../components/PullToRefresh";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { HomeScreenProps } from "@/src/presentation/interface/HomeScreenType";
 
-export const HomeScreen = () => {
+export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeScreenProps) => {
     const { user } = useAuth();
     const { activities, loading, error, refreshing, refresh, handleRefresh } = useActivities();
     const [showForm, setShowForm] = useState(false);
@@ -31,10 +28,6 @@ export const HomeScreen = () => {
     const [theme, setTheme] = useState("");
     const [creating, setCreating] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
-    const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
-    const [voteActivityId, setVoteActivityId] = useState<number | null>(null);
-    const [billActivityId, setBillActivityId] = useState<number | null>(null);
-    const [profileUsername, setProfileUsername] = useState<string | null>(null);
     const themes = ["sport", "sortie", "weekend"];
 
     const invitations = activities.filter((a) => a.memberStatus === "invited");
@@ -123,8 +116,7 @@ export const HomeScreen = () => {
     const renderActivity = ({ item }: { item: ActivitySummary }) => (
         <TouchableOpacity
             style={styles.activityRow}
-            onPress={() => setSelectedActivityId(item.id)}
-            activeOpacity={0.7}
+            onPress={() => onNavigateToActivity(item.id)} activeOpacity={0.7}
         >
             <View style={styles.activityAvatar}>
                 <Text style={styles.activityAvatarText}>{item.name.charAt(0).toUpperCase()}</Text>
@@ -149,36 +141,7 @@ export const HomeScreen = () => {
             </View>
         );
     }
-    if (voteActivityId) {
-        return (
-            <VoteScreen
-                activityId={voteActivityId}
-                onBack={() => { setVoteActivityId(null); refresh(); }}
-                onGoToBill={(id) => { setVoteActivityId(null); setBillActivityId(id); }}
-            />
-        );
-    }
-    if (billActivityId) {
-        return (
-            <BillScreen
-                activityId={billActivityId}
-                onBack={() => { setBillActivityId(null); refresh(); }}
-            />
-        );
-    }
-    if (selectedActivityId) {
-        return (
-            <ActivityDetailScreen
-                activityId={selectedActivityId}
-                onBack={() => { setSelectedActivityId(null); refresh(); }}
-                onGoToVote={(id) => { setSelectedActivityId(null); setVoteActivityId(id); }}
-                onGoToBill={(id) => { setSelectedActivityId(null); setBillActivityId(id); }}
-            />
-        );
-    }
-    if (profileUsername) {
-        return <ProfileScreen username={profileUsername} onBack={() => setProfileUsername(null)} />;
-    }
+
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -190,7 +153,7 @@ export const HomeScreen = () => {
                 <View style={styles.topBar}>
                     <TouchableOpacity
                         style={styles.profileBubble}
-                        onPress={() => setProfileUsername(user?.username || "")}
+                        onPress={() => onNavigateToProfile(user?.username || "")}
                         activeOpacity={0.7}
                     >
                         <Text style={styles.profileBubbleText}>{user?.username.charAt(0).toUpperCase()}</Text>
@@ -252,7 +215,7 @@ export const HomeScreen = () => {
                     </View>
                 )}
 
-                
+
                 {invitations.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Invitations</Text>
@@ -265,7 +228,7 @@ export const HomeScreen = () => {
                     </View>
                 )}
 
-              
+
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Mes activités</Text>
                     {myActivities.length === 0 ? (
@@ -285,7 +248,7 @@ export const HomeScreen = () => {
                     )}
                 </View>
 
-                
+
                 {archivedActivities.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Terminées</Text>

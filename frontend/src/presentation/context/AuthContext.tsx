@@ -4,8 +4,6 @@ import { container } from "@/src/infrastructure/injecteur/container";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isTokenExpired } from "@/src/infrastructure/auth/tokenUtils";
 import { setOnUnauthorized } from "@/src/infrastructure/auth/ApiFetch-Repository";
-import { useNotifications } from "../hooks/useNotifications";
-import { environment } from "@/src/environment";
 
 interface AuthContextType {
     user: User | null;
@@ -24,7 +22,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { expoPushToken } = useNotifications();
 
 
     const logout = useCallback(async () => {
@@ -96,22 +93,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const isAuthenticated = !!user;
 
-    useEffect(() => {
-    const saveToken = async () => {
-        if (!isAuthenticated || !expoPushToken) return;
-        const jwt = await AsyncStorage.getItem("token");
-        await fetch(`${environment.apiUrl}/user/push-token`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${jwt}`,
-            },
-            body: JSON.stringify({ token: expoPushToken }),
-        });
-    };
-    saveToken();
-}, [isAuthenticated, expoPushToken]);
-
+    
     return (
         <AuthContext.Provider value={{ user, loading, error, isAuthenticated, login, register, logout }}>
             {children}
