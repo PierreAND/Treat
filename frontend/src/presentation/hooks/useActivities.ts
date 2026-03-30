@@ -22,7 +22,29 @@ export const useActivities = () => {
             setLoading(false);
         }
     };
-        const handleRefresh = async () => {
+
+    const create = async (name: string, theme: string) => {
+        setError(null);
+        try {
+            await container.createActivity.execute({ name, theme });
+            await fetchActivities();
+        } catch (e: any) {
+            setError(e.message);
+            throw e;
+        }
+    };
+
+    const respond = async (activityId: number, accept: boolean) => {
+        setError(null);
+        try {
+            await container.respondInvite.execute(activityId, accept);
+            await fetchActivities();
+        } catch (e: any) {
+            setError(e.message);
+        }
+    };
+
+    const handleRefresh = async () => {
         setRefreshing(true);
         setError(null);
         try {
@@ -42,5 +64,5 @@ export const useActivities = () => {
         }
     }, [isAuthenticated]);
 
-    return { activities, loading, refreshing, error, refresh: fetchActivities, handleRefresh };
+    return { activities, loading, refreshing, error, refresh: fetchActivities, handleRefresh, create, respond };
 };

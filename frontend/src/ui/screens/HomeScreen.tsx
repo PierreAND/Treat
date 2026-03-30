@@ -41,7 +41,7 @@ export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeSc
             await create(name, theme);
             setName(""); setTheme(""); setShowForm(false);
         } catch (e: any) {
-            setFormError(e.message);s
+            setFormError(e.message);
         } finally {
             setCreating(false);
         }
