@@ -12,17 +12,17 @@ import {
 import { useAuth } from "@/src/presentation/context/AuthContext";
 import { useActivities } from "@/src/presentation/hooks/useActivities";
 import { colors } from "@/src/ui/styles/colors";
-import { container } from "@/src/infrastructure/injecteur/container";
 import { spacing, radius } from "@/src/ui/styles/spacing";
 import { shadows } from "../styles/shadow";
 import { ActivitySummary } from "@/src/domain/entities/activity.model";
 import { PullToRefresh } from "../components/PullToRefresh";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { HomeScreenProps } from "@/src/presentation/interface/HomeScreenType";
+import { InvitationCard } from "../components/InvitationCard";
 
 export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeScreenProps) => {
     const { user } = useAuth();
-    const { activities, loading, error, refreshing, refresh, handleRefresh } = useActivities();
+    const { activities, loading, error, refreshing, create, refresh, handleRefresh, respond } = useActivities();
     const [showForm, setShowForm] = useState(false);
     const [name, setName] = useState("");
     const [theme, setTheme] = useState("");
@@ -35,18 +35,11 @@ export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeSc
     const archivedActivities = activities.filter((a) => a.status === "finished");
 
     const handleCreate = async () => {
-        if (!name || !theme) {
-            setFormError("Nom et thème requis");
-            return;
-        }
+        if (!name || !theme) { setFormError("Nom et thème requis"); return; }
         setCreating(true);
-        setFormError(null);
         try {
-            await container.createActivity.execute({ name, theme });
-            setName("");
-            setTheme("");
-            setShowForm(false);
-            refresh();
+            await create(name, theme);
+            setName(""); setTheme(""); setShowForm(false);
         } catch (e: any) {
             setFormError(e.message);
         } finally {
@@ -54,14 +47,6 @@ export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeSc
         }
     };
 
-    const handleRespond = async (activityId: number, accept: boolean) => {
-        try {
-            await container.respondInvite.execute(activityId, accept);
-            refresh();
-        } catch (e: any) {
-            console.error(e.message);
-        }
-    };
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -83,35 +68,17 @@ export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeSc
         }
     };
 
-    const renderInvitation = ({ item }: { item: ActivitySummary }) => (
-        <View style={styles.inviteCard}>
-            <View style={styles.inviteTop}>
-                <View style={styles.inviteAvatar}>
-                    <Text style={styles.inviteAvatarText}>{item.creator.charAt(0).toUpperCase()}</Text>
-                </View>
-                <View style={styles.inviteContent}>
-                    <Text style={styles.inviteName}>{item.name}</Text>
-                    <Text style={styles.inviteMeta}>{item.theme} · {item.creator}</Text>
-                </View>
-            </View>
-            <View style={styles.inviteActions}>
-                <TouchableOpacity
-                    style={styles.acceptBtn}
-                    onPress={() => handleRespond(item.id, true)}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.acceptBtnText}>Accepter</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.declineBtn}
-                    onPress={() => handleRespond(item.id, false)}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.declineBtnText}>Refuser</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
+    {
+        invitations.map((item) => (
+            <InvitationCard
+                key={item.id.toString()}
+                item={item}
+                onAccept={(id) => respond(id, true)}
+                onDecline={(id) => respond(id, false)}
+            />
+        ))
+    }
+
 
     const renderActivity = ({ item }: { item: ActivitySummary }) => (
         <TouchableOpacity
@@ -219,12 +186,14 @@ export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeSc
                 {invitations.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Invitations</Text>
-                        <FlatList
-                            data={invitations}
-                            keyExtractor={(item) => item.id.toString()}
-                            renderItem={renderInvitation}
-                            scrollEnabled={false}
-                        />
+                        {invitations.map((item) => (
+                            <InvitationCard
+                                key={item.id.toString()}
+                                item={item}
+                                onAccept={(id) => respond(id, true)}
+                                onDecline={(id) => respond(id, false)}
+                            />
+                        ))}
                     </View>
                 )}
 
@@ -387,44 +356,6 @@ const styles = StyleSheet.create({
         letterSpacing: -0.3,
     },
 
-    inviteCard: {
-        backgroundColor: colors.white,
-        borderRadius: radius.xl,
-        padding: spacing.lg,
-        marginBottom: spacing.sm,
-        ...shadows.md,
-    },
-    inviteTop: { flexDirection: "row", alignItems: "center", marginBottom: spacing.md },
-    inviteAvatar: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: colors.accent + "14",
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: spacing.md,
-    },
-    inviteAvatarText: { color: colors.accent, fontWeight: "700", fontSize: 18 },
-    inviteContent: { flex: 1 },
-    inviteName: { fontSize: 16, fontWeight: "700", color: colors.textPrimary },
-    inviteMeta: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
-    inviteActions: { flexDirection: "row", gap: spacing.sm },
-    acceptBtn: {
-        flex: 1,
-        backgroundColor: colors.primary,
-        paddingVertical: spacing.sm + 4,
-        borderRadius: radius.md,
-        alignItems: "center",
-    },
-    acceptBtnText: { color: colors.white, fontWeight: "700", fontSize: 14 },
-    declineBtn: {
-        flex: 1,
-        backgroundColor: colors.bgPrimary,
-        paddingVertical: spacing.sm + 4,
-        borderRadius: radius.md,
-        alignItems: "center",
-    },
-    declineBtnText: { color: colors.error, fontWeight: "700", fontSize: 14 },
 
     listCard: {
         backgroundColor: colors.white,
