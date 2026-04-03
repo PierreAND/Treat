@@ -61,17 +61,20 @@ export const useNotifications = () => {
         const lastResponse = Notifications.getLastNotificationResponse();
         if (lastResponse) {
             const data = lastResponse.notification.request.content.data;
-            if (data?.type === "invite") router.push("/");
+            if (data?.type === "invite") {
+                router.push("/");
+            } else if (data?.activityId) {
+                router.push(`/activity/${data.activityId}`);
+            }
         }
 
         responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
             const data = response.notification.request.content.data;
-            if (data?.type === "invite") router.push("/");
-        });
-
-        responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-            const data = response.notification.request.content.data;
-            if (data?.activityId) router.push(`/activity/${data.activityId}`);
+            if (data?.type === "invite") {
+                router.push("/");
+            } else if (data?.activityId) {
+                router.push(`/activity/${data.activityId}`);
+            }
         });
 
         return () => {
