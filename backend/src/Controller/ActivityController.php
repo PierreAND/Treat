@@ -132,23 +132,28 @@ class ActivityController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
+
         $user = $em->getRepository(User::class)->findOneBy(['username' => $data['username']]);
         if (!$user) {
             return $this->json(['message' => 'Utilisateur introuvable'], 404);
         }
 
-        if ($this->activityMemberRepository->findByUserAndActivity($user, $activity)) {
-            return $this->json(['message' => 'Déjà membre'], 409);
+        $existingMember = $this->activityMemberRepository->findByUserAndActivity($user, $activity);
+
+        if ($existingMember) {
+            if ($existingMember->getStatus() === 'accepted') {
+                return $this->json(['message' => 'Deja membre'], 409);
+            }
+            $existingMember->setStatus('invited');
+            $em->flush();
+        } else {
+            $member = new ActivityMember();
+            $member->setUser($user);
+            $member->setActivity($activity);
+            $member->setStatus('invited');
+            $em->persist($member);
+            $em->flush();
         }
-
-        $member = new ActivityMember();
-        $member->setUser($user);
-        $member->setActivity($activity);
-        $member->setStatus('invited');
-
-        $em->persist($member);
-        $em->flush();
-
         $this->notificationService->send(
             $user,
             'Nouvelle invitation',
@@ -313,5 +318,4 @@ class ActivityController extends AbstractController
 
         return $this->json(['message' => 'Membre retiré']);
     }
-   
 }
