@@ -1,14 +1,9 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { ActivitySummary } from "@/src/domain/entities/activity.model";
 import { colors } from "../styles/colors";
 import { radius, spacing } from "../styles/spacing";
 import { shadows } from "../styles/shadow";
+import { InvitationCardProps } from "@/src/presentation/interface/InvitationComponentType";
 
-interface InvitationCardProps {
-    item: ActivitySummary;
-    onAccept: (id: number) => void;
-    onDecline: (id: number) => void;
-}
 
 export const InvitationCard = ({ item, onAccept, onDecline }: InvitationCardProps) => (
     <View style={styles.inviteCard}>
