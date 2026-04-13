@@ -32,7 +32,7 @@
             "symfony/flex": true,
             "symfony/runtime": true
         },
-         "platform": {
+        "platform": {
             "php": "8.2.0"
         },
         "bump-after-update": true,
@@ -59,16 +59,9 @@
         "symfony/polyfill-php82": "*"
     },
     "scripts": {
-        "auto-scripts": {
-            
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
-        },
-        "post-install-cmd": [
-            "@auto-scripts"
-        ],
-        "post-update-cmd": [
-            "@auto-scripts"
-        ]
+        "auto-scripts": {},
+        "post-install-cmd": [],
+        "post-update-cmd": []
     },
     "conflict": {
         "symfony/symfony": "*"
