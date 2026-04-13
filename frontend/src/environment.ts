@@ -1,3 +1,3 @@
 export const environment = {
-    apiUrl: "http://192.168.1.24:8000/api",
+    apiUrl: "https://wgp-server-prod-176a0ae0b064.herokuapp.com/api",
 };
