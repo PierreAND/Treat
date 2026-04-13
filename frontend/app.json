@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "frontend",
+    "name": "wgp",
     "slug": "frontend",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pandrieu.wgp",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {
