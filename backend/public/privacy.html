@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WGP – Politique de Confidentialité</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #FAFAF8;
+            color: #2C2C2C;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            background: #1A1A2E;
+            color: #FAFAF8;
+            padding: 3.5rem 1.5rem 3rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.4rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.3rem;
+        }
+
+        .header p {
+            opacity: 0.6;
+            font-size: 0.95rem;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+
+        .updated {
+            display: inline-block;
+            background: #E8E8E2;
+            color: #6B6B6B;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+        }
+
+        section { margin-bottom: 2.2rem; }
+
+        h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.35rem;
+            color: #1A1A2E;
+            margin-bottom: 0.6rem;
+            letter-spacing: -0.01em;
+        }
+
+        p { margin-bottom: 0.8rem; font-size: 0.95rem; color: #444; }
+
+        ul {
+            margin: 0.5rem 0 1rem 1.3rem;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        ul li { margin-bottom: 0.35rem; }
+
+        a { color: #1A1A2E; font-weight: 500; }
+
+        .contact-box {
+            background: #1A1A2E;
+            color: #FAFAF8;
+            border-radius: 12px;
+            padding: 1.5rem 1.8rem;
+            margin-top: 2.5rem;
+        }
+
+        .contact-box h2 { color: #FAFAF8; margin-bottom: 0.4rem; }
+        .contact-box p { color: rgba(250,250,248,0.7); margin: 0; }
+        .contact-box a { color: #FAFAF8; text-decoration: underline; }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            font-size: 0.8rem;
+            color: #AAA;
+            border-top: 1px solid #EAEAEA;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>WGP</h1>
+    <p>Politique de Confidentialité</p>
+</div>
+
+<div class="container">
+
+    <span class="updated">Dernière mise à jour : avril 2026</span>
+
+    <section>
+        <h2>Introduction</h2>
+        <p>WGP est une application mobile qui permet de créer des activités entre amis, d'établir des règles, de voter entre participants et de répartir les dépenses selon un classement. La présente politique explique comment nous collectons, utilisons et protégeons vos données personnelles.</p>
+    </section>
+
+    <section>
+        <h2>Données collectées</h2>
+        <p>Lorsque vous utilisez WGP, nous collectons les données suivantes :</p>
+        <ul>
+            <li><strong>Informations de compte</strong> : adresse e-mail, nom d'utilisateur et mot de passe (chiffré)</li>
+            <li><strong>Données d'activité</strong> : activités créées, règles définies, votes soumis et classements générés</li>
+            <li><strong>Données de facturation</strong> : montants des notes et répartitions entre participants</li>
+            <li><strong>Données techniques</strong> : tokens de notifications push (Expo Push Token)</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Utilisation des données</h2>
+        <p>Vos données sont utilisées exclusivement pour :</p>
+        <ul>
+            <li>Créer et gérer votre compte utilisateur</li>
+            <li>Permettre la création d'activités, les invitations et les votes entre participants</li>
+            <li>Calculer les classements et répartir les notes entre membres</li>
+            <li>Envoyer des notifications liées à vos activités (invitations, résultats)</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Partage des données</h2>
+        <p>Nous ne vendons, ne louons et ne partageons vos données personnelles avec aucun tiers à des fins commerciales. Vos données d'activité (votes, classements) sont partagées uniquement avec les autres membres de la même activité, conformément au fonctionnement de l'application.</p>
+    </section>
+
+    <section>
+        <h2>Stockage et sécurité</h2>
+        <p>Vos données sont hébergées sur des serveurs sécurisés (Heroku, Union Européenne). Les mots de passe sont chiffrés et ne sont jamais stockés en clair. L'accès à l'API est protégé par authentification JWT.</p>
+    </section>
+
+    <section>
+        <h2>Conservation des données</h2>
+        <p>Vos données de compte sont conservées tant que votre compte est actif. Les activités archivées peuvent être supprimées automatiquement après 30 jours. Vous pouvez demander la suppression de votre compte et de vos données à tout moment.</p>
+    </section>
+
+    <section>
+        <h2>Vos droits</h2>
+        <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :</p>
+        <ul>
+            <li><strong>Accès</strong> : consulter les données que nous détenons sur vous</li>
+            <li><strong>Rectification</strong> : corriger vos informations personnelles</li>
+            <li><strong>Suppression</strong> : demander la suppression de votre compte et de toutes vos données</li>
+            <li><strong>Portabilité</strong> : obtenir une copie de vos données dans un format lisible</li>
+        </ul>
+        <p>Pour exercer ces droits, contactez-nous à l'adresse ci-dessous.</p>
+    </section>
+
+    <div class="contact-box">
+        <h2>Contact</h2>
+        <p>Pour toute question relative à vos données personnelles :<br>
+        <a href="mailto:andrieu.ps@gmail.com">andrieu.ps@gmail.com</a></p>
+    </div>
+
+</div>
+
+<div class="footer">
+    © 2026 WGP. Tous droits réservés.
+</div>
+
+</body>
+</html>
