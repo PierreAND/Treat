@@ -8,6 +8,7 @@ import {
     ActivityIndicator,
     ScrollView,
     StyleSheet,
+    Pressable,
 } from "react-native";
 import { useAuth } from "@/src/presentation/context/AuthContext";
 import { useActivities } from "@/src/presentation/hooks/useActivities";
@@ -112,7 +113,7 @@ export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeSc
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView 
+            <ScrollView
                 scrollEnabled={true}
                 keyboardShouldPersistTaps="handled"
                 style={styles.screen}
@@ -132,9 +133,9 @@ export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeSc
                 <Text style={styles.hero}>Who{'\n'}Gonna{'\n'}Pay</Text>
 
                 {!showForm && (
-                    <TouchableOpacity style={styles.createBtn} onPress={() => setShowForm(true)} activeOpacity={0.8}>
+                    <Pressable style={styles.createBtn} onPress={() => setShowForm(true)}>
                         <Text style={styles.createBtnText}>Nouvelle activité</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 )}
 
                 {showForm && (
