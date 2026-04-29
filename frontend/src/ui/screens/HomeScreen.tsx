@@ -112,7 +112,9 @@ export const HomeScreen = ({ onNavigateToActivity, onNavigateToProfile }: HomeSc
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScrollView
+            <ScrollView 
+                scrollEnabled={true}
+                keyboardShouldPersistTaps="handled"
                 style={styles.screen}
                 showsVerticalScrollIndicator={false}
                 refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={handleRefresh} />}
