@@ -318,4 +318,36 @@ class ActivityController extends AbstractController
 
         return $this->json(['message' => 'Membre retiré']);
     }
+
+    #[Route('/{id}', name: 'activity_delete', methods: ['DELETE'])]
+    public function delete(
+        Activity $activity,
+        EntityManagerInterface $em,
+        BillShareRepository $billShareRepository
+    ): JsonResponse {
+        /** @var \App\Entity\User $currentUser */
+        $currentUser = $this->getUser();
+
+        if ($activity->getCreator() !== $currentUser) {
+            return $this->json(['message' => 'Seul le créateur peut supprimer l\'activité'], 403);
+        }
+
+        foreach ($activity->getMembers() as $member) {
+            if ($member->getUser() !== $currentUser && $member->getStatus() === 'accepted') {
+                $this->notificationService->send(
+                    $member->getUser(),
+                    'Activité supprimée',
+                    'L\'activité "' . $activity->getName() . '" a été supprimée par ' . $currentUser->getUsername(),
+                    ['type' => 'activity_deleted']
+                );
+            }
+
+            $billShareRepository->deleteByUserAndActivity($member->getUser(), $activity);
+        }
+
+        $em->remove($activity);
+        $em->flush();
+
+        return $this->json(['message' => 'Activité supprimée']);
+    }
 }
