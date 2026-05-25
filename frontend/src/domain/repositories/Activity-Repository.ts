@@ -9,4 +9,5 @@ export interface ActivityRepository {
     startActivity(id: number): Promise<void>;
     stopActivity(id: number): Promise<void>;
     deleteMember(activityId: number ,memberId: number): Promise<void>;
+    deleteActivity(activityId: number): Promise<void>;
 }

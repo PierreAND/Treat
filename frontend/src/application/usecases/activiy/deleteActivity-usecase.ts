@@ -2,8 +2,8 @@ import { ActivityRepository } from "@/src/domain/repositories/Activity-Repositor
 
 export class DeleteActivityUseCase {
     constructor (private activityRepository : ActivityRepository) {}
-    async execute() {
-        
+    async execute(activityId: number) {
+        this.activityRepository.deleteActivity(activityId)
     }
 
 }
