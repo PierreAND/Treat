@@ -127,4 +127,10 @@ export class ApiActivityRepositoryImp implements ActivityRepository {
             throw new Error(error.message ||"Impossible d'enlever l'utilisateur")
         }
     }
+
+    async deleteActivity(activityId: number): Promise<void> {
+        const response = await fetch(`${this.baseUrl}/${activityId}`, {
+            
+        })
+    }
 }
